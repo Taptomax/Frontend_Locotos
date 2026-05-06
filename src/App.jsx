@@ -11,10 +11,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Si entras a la raíz, te manda directo al login */}
+        
         <Route path="/" element={<Navigate to="/login" />} />
         
-        {/* Definición de las rutas */}
+     
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/verify-email" element={<VerifyCodePage />} />
