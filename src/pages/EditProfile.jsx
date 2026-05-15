@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { updateProfile, deleteProfile } from '../services/profileService';
 
 const EditProfile = () => {
-  const { id } = useParams(); // Agarramos el ID de la URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [nombre, setNombre] = useState('');
   const token = localStorage.getItem('token');
@@ -11,7 +11,7 @@ const EditProfile = () => {
   const handleSave = async () => {
     if (!nombre.trim()) return alert("El nombre no puede estar vacío");
     
-    const res = await updateProfile(id, { nombre }, token);
+    const res = await updateProfile(id, { nombre: nombre.trim() }, token);
     if (res) {
       navigate('/perfiles');
     }
@@ -29,55 +29,61 @@ const EditProfile = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col items-center justify-center bg-netflixBlack text-white p-4">
-      <div className="w-full max-w-xl">
-        <h1 className="text-5xl font-medium mb-8 border-b border-gray-700 pb-4">Editar perfil</h1>
+    
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-locoto-bg text-locoto-text p-6 font-sans">
+      <div className="w-full max-w-2xl animate-fadeIn">
         
-        <div className="flex flex-col md:flex-row items-center gap-8 py-8">
-          {/* Avatar estático por ahora */}
-          <div className="relative group">
+        <h1 className="text-4xl md:text-6xl font-black mb-8 tracking-tighter italic text-locoto-primary uppercase border-b border-locoto-primary/20 pb-6">
+          Editar perfil
+        </h1>
+        
+        <div className="flex flex-col md:flex-row items-center gap-10 py-10 bg-locoto-div/30 rounded-2xl p-8 shadow-2xl border border-locoto-primary/10">
+          
+          <div className="relative group cursor-pointer">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" 
-              className="h-32 w-32 md:h-40 md:w-40 rounded" 
+              className="h-32 w-32 md:h-40 md:w-40 rounded-2xl object-cover border-2 border-locoto-primary/30 group-hover:border-locoto-secondary transition-all" 
               alt="avatar" 
             />
-            <div className="absolute bottom-2 left-2 bg-black/60 p-1 rounded-full border border-white">
-              <span className="text-xs">✎</span>
+            <div className="absolute -bottom-2 -right-2 bg-locoto-secondary p-2 rounded-full border-2 border-locoto-bg shadow-lg">
+              <span className="text-locoto-bg text-sm font-bold">✎</span>
             </div>
           </div>
 
           <div className="flex-1 w-full">
+            <label className="block text-[10px] font-bold text-locoto-muted uppercase tracking-widest mb-3 ml-1">Nombre del perfil</label>
             <input 
               type="text" 
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
-              placeholder="Nombre del perfil" 
-              className="bg-gray-600 p-3 text-xl outline-none w-full mb-4 focus:bg-gray-500 transition-colors"
+              placeholder="Ej. Mateo_Streaming" 
+              className="bg-zinc-900/60 border border-zinc-800 p-4 text-xl outline-none w-full mb-6 focus:border-locoto-secondary rounded-xl transition-all text-locoto-text"
             />
-            <p className="text-gray-400 text-sm">Configuración de idioma y restricciones...</p>
+            <p className="text-locoto-muted text-xs uppercase tracking-wider opacity-60">Configuración avanzada de contenido</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 mt-8 pt-8 border-t border-gray-700">
+        {/* Acciones de pie de página */}
+        <div className="flex flex-wrap items-center gap-6 mt-10 pt-10 border-t border-locoto-primary/20">
           <button 
             onClick={handleSave}
-            className="bg-white text-black px-8 py-2 font-bold hover:bg-netflixRed hover:text-white transition uppercase"
+            className="bg-locoto-secondary text-locoto-bg px-10 py-3 font-black text-xs tracking-[0.2em] uppercase rounded-xl hover:bg-locoto-accent transition-all duration-300 shadow-neon-sm"
           >
-            Guardar
+            GUARDAR
           </button>
           
           <button 
             onClick={() => navigate('/perfiles')}
-            className="border border-gray-500 px-8 py-2 text-gray-500 hover:border-white hover:text-white transition uppercase"
+            className="border-2 border-locoto-muted px-10 py-3 text-locoto-muted text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:border-locoto-primary hover:text-locoto-primary transition-all duration-300"
           >
-            Cancelar
+            CANCELAR
           </button>
 
           <button 
             onClick={handleDelete}
-            className="border border-red-600 px-8 py-2 text-red-600 hover:bg-red-600 hover:text-white transition uppercase ml-auto"
+            className="border-2 border-red-500/50 px-10 py-3 text-red-400 text-xs font-black uppercase tracking-[0.2em] rounded-xl hover:bg-red-500/10 hover:border-red-500 transition-all duration-300 ml-auto"
           >
-            Eliminar perfil
+            ELIMINAR
           </button>
         </div>
       </div>

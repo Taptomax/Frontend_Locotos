@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const VerifyCodePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const email = location.state?.email || ""; // Obtenemos el correo del paso anterior
+  const email = location.state?.email || ""; 
   
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ const VerifyCodePage = () => {
       const response = await fetch('http://localhost:3000/api/email/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correo: email, code: code }) // Endpoint que vimos en tu Controller
+        body: JSON.stringify({ correo: email, code: code }) 
       });
 
       const data = await response.json();
