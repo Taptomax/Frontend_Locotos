@@ -8,7 +8,6 @@ const ProfilesPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
-  
   const defaultAvatar = 'https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png';
 
   useEffect(() => {
@@ -49,10 +48,10 @@ const ProfilesPage = () => {
   }
 
   return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-center bg-locoto-bg p-4 font-sans">
-      <h1 className="mb-16 text-center text-4xl md:text-5xl text-locoto-text font-black tracking-tighter">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-locoto-bg p-4 font-sans text-locoto-text">
+      <h1 className="mb-16 text-center text-4xl md:text-5xl font-black tracking-tighter">
         {isEditing ? (
-          <span className="text-locoto-secondary italic">ADMINISTRAR PERFILES</span>
+          <span className="text-locoto-secondary italic uppercase">ADMINISTRAR PERFILES</span>
         ) : (
           <>¿QUIÉN ESTÁ <span className="text-locoto-primary italic">VIENDO</span> AHORA?</>
         )}
@@ -60,11 +59,21 @@ const ProfilesPage = () => {
       
       <div className="flex flex-wrap justify-center gap-10">
         {profiles.map((p) => (
-          <div key={p.id_perfil} className="group flex cursor-pointer flex-col items-center relative">
+          <div key={p.id_perfil} className="group flex flex-col items-center relative">
             
             <div 
-              className="relative h-32 w-32 md:h-40 md:w-40 flex-shrink-0 overflow-hidden rounded-2xl border-4 border-transparent transition-all duration-300 group-hover:border-locoto-primary group-hover:scale-105 bg-locoto-div shadow-lg"
-              onClick={() => isEditing ? navigate(`/edit-profile/${p.id_perfil}`) : console.log(`Entrando como ${p.nombre}`)}
+              className="relative h-32 w-32 md:h-40 md:w-40 flex-shrink-0 overflow-hidden rounded-2xl border-4 border-transparent transition-all duration-300 group-hover:border-locoto-primary group-hover:scale-105 bg-locoto-div shadow-lg cursor-pointer"
+              onClick={() => {
+                if (isEditing) {
+                  // Modo Edición: Vamos a editar el perfil
+                  navigate(`/edit-profile/${p.id_perfil}`);
+                } else {
+                  // Modo Selección: Guardamos el perfil activo y vamos al catálogo
+                  localStorage.setItem('activeProfile', JSON.stringify(p));
+                  console.log("Navegando al catálogo con el perfil:", p.nombre);
+                  navigate('/catalog'); 
+                }
+              }}
             >
               <img 
                 src={p.avatar_url || defaultAvatar} 
@@ -88,7 +97,7 @@ const ProfilesPage = () => {
           </div>
         ))}
 
-        
+        {/* Botón para crear nuevo perfil */}
         <div 
           className="group flex cursor-pointer flex-col items-center" 
           onClick={() => navigate('/create-profile')}

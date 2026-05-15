@@ -1,0 +1,91 @@
+/* Todo el CSS de tu amiga ahora vive "dentro" de esta clase */
+.catalog-theme-wrapper {
+  --bg-primary: #FAFBFD;
+  --bg-secondary: #f0f1f5;
+  --text-primary: #27495F;
+  --text-secondary: #7D7ECF;
+  --accent-1: #E182CB;
+  --accent-2: #8AD5DF;
+  --border-color: #d0d2d8;
+  --card-bg: #ffffff;
+  
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.3s;
+}
+
+/* Modo Oscuro encapsulado */
+.catalog-theme-wrapper.dark-mode {
+  --bg-primary: #27495F;
+  --bg-secondary: #1f3a4a;
+  --text-primary: #FAFBFD;
+  --text-secondary: #8AD5DF;
+  --accent-1: #E182CB;
+  --accent-2: #7D7ECF;
+  --border-color: #3a5a6f;
+  --card-bg: #1f3a4a;
+}
+
+.catalog-theme-wrapper header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.catalog-theme-wrapper h1 {
+  font-size: 2rem;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.catalog-theme-wrapper .theme-toggle {
+  background: var(--accent-1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.catalog-theme-wrapper .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.catalog-theme-wrapper .card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.catalog-theme-wrapper .card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  border-color: var(--accent-1);
+}
+
+.catalog-theme-wrapper .tipo {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  background: var(--bg-secondary);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 10px;
+}

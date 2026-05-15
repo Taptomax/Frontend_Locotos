@@ -6,6 +6,8 @@ import ProfilesPage from './pages/ProfilesPage';
 import CreateProfile from './pages/CreateProfile';
 import EditProfile from './pages/EditProfile';
 import VerifyCodePage from './pages/VerifyCodePage';
+import CatalogPage from './pages/catalog/CatalogPage';
+
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
         <Route path="/perfiles" element={<ProfilesPage />} />
         <Route path="/create-profile" element={<CreateProfile />} />
         <Route path="/edit-profile/:id" element={<EditProfile />} />
+        <Route path="/catalog" element={<CatalogPage />} />
       </Routes>
     </Router>
   );
