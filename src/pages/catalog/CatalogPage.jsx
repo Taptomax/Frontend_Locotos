@@ -2,15 +2,20 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './CatalogPage.css'; 
 
+// Iconos idénticos al Login/Registro
+const IconSun  = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
+const IconMoon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
+
 const CatalogPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+
+  const dm = darkMode;
 
   useEffect(() => {
-    // Cargar preferencia de tema
     const savedTheme = localStorage.getItem('catalog-theme');
-    if (savedTheme === 'dark') setDarkMode(true);
+    if (savedTheme) setDarkMode(savedTheme === 'dark');
 
     const fetchCatalog = async () => {
       try {
@@ -26,40 +31,58 @@ const CatalogPage = () => {
   }, []);
 
   const toggleTheme = () => {
-    const newMode = !darkMode;
+    const newMode = !dm;
     setDarkMode(newMode);
     localStorage.setItem('catalog-theme', newMode ? 'dark' : 'light');
   };
 
-  if (loading) return <div className="p-10">Cargando Catálogo de Locotos...</div>;
+  if (loading) return (
+    <div className={`catalog-loading ${dm ? 'dark-mode' : ''}`}>
+      <div className="loader-text">CARGANDO LOCO<span>TOS</span>...</div>
+    </div>
+  );
 
   return (
-    /* La Clase Maestra que evita que el CSS se escape a otras páginas */
-    <div className={`catalog-theme-wrapper ${darkMode ? 'dark-mode' : ''}`}>
-      <header>
-        <h1>🎬 Catálogo de Contenido</h1>
-        <button className="theme-toggle" onClick={toggleTheme}>
-          {darkMode ? '☀️ Claro' : '🌙 Oscuro'}
-        </button>
+    <div className={`catalog-theme-wrapper ${dm ? 'dark-mode' : ''}`}>
+      {/* El Botón de Toggle idéntico */}
+      <button 
+        type="button" 
+        onClick={toggleTheme} 
+        className="theme-toggle-fixed"
+      >
+        {dm ? <IconSun /> : <IconMoon />}
+      </button>
+
+      <header className="catalog-header">
+        <div className="brand">
+          <h1 className="logo-text">LOCO<span>TOS</span></h1>
+          <p className="subtitle">Catálogo de Contenido</p>
+        </div>
       </header>
 
-      <div className="grid">
+      <main className="catalog-grid">
         {products.map((c, index) => (
-          <div key={c._id || index} className="card">
-            <img 
-              src={c.poster || c.imagen_url || 'https://via.placeholder.com/200x300'} 
-              alt={c.titulo} 
-              style={{ width: '100%', borderRadius: '10px' }} 
-            />
-            <h3>{c.titulo || c.name}</h3>
-            <div className="tipo">{c.tipo || 'Pelicula'}</div>
-            <div className="calificacion">⭐ {c.calificacion || '8.0'}</div>
+          <div key={c._id || index} className="content-card">
+            <div className="poster-container">
+              <img 
+                src={c.poster || c.imagen_url || 'https://via.placeholder.com/300x450'} 
+                alt={c.titulo} 
+                className="poster-img"
+              />
+              <div className="card-overlay">
+                <span className="calificacion-badge">⭐ {c.calificacion || '8.0'}</span>
+              </div>
+            </div>
+            <div className="card-info">
+              <span className="content-type">{c.tipo || 'Película'}</span>
+              <h3 className="content-title">{c.titulo || c.name}</h3>
+            </div>
           </div>
         ))}
-      </div>
+      </main>
 
-      <footer style={{ marginTop: '3rem', textAlign: 'center', opacity: 0.6 }}>
-        <p>StreamFlix Catalog — Todos tus contenidos en un solo lugar</p>
+      <footer className="catalog-footer">
+        <p>© 2026 StreamFlix Catalog — Tu central de entretenimiento distribuida</p>
       </footer>
     </div>
   );

@@ -1,9 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Syne:wght@700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-
+  --sans: 'DM Sans', sans-serif;
+  --heading: 'Syne', sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -56,16 +60,32 @@
 
 
 body {
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
   margin: 0;
   @apply bg-locoto-bg text-locoto-text;
 }
 
+h1, h2, h3, .font-display, .font-heading {
+  font-family: var(--heading) !important;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+input, button, textarea, select {
+  font-family: var(--sans) !important;
+}
+
+button[type="submit"], .btn-syne {
+  font-family: var(--heading) !important;
+}
+
 #root {
-  width: 1126px;
+  /*width: 1126px;*/
   max-width: 100%;
-  margin: 0 auto;
+  /*margin: 0 auto;*/
   text-align: center;
-  border-inline: 1px solid var(--border);
+  /*border-inline: 1px solid var(--border);*/
   min-height: 100svh;
   display: flex;
   flex-direction: column;
