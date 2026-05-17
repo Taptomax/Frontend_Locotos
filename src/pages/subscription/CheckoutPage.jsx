@@ -6,11 +6,11 @@ const CheckoutPage = () => {
   const { planId } = useParams();
   const navigate = useNavigate();
   
-  // Estados para nuevo método
+  
   const [tipoMetodo, setTipoMetodo] = useState('Tarjeta de Crédito');
   const [proveedor, setProveedor] = useState('Visa');
   
-  // Métodos guardados recuperados del backend
+  
   const [savedMethods, setSavedMethods] = useState([]);
   const [useSaved, setUseSaved] = useState(false);
   const [selectedMethodId, setSelectedMethodId] = useState('');
@@ -21,7 +21,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     if (!storedUser) return navigate('/login');
     
-    // Recuperar si el usuario ya tiene instrumentos financieros registrados
+   
     axios.get(`http://localhost:3002/api/suscriptions/metodos-pago/${storedUser.id_usuario}`)
       .then(res => {
         setSavedMethods(res.data);
@@ -40,7 +40,7 @@ const CheckoutPage = () => {
     try {
       let idMetodoFinal = selectedMethodId;
 
-      // Si no va a usar un método guardado, registra uno nuevo (Paso 1)
+     
       if (!useSaved) {
         const mpRes = await axios.post('http://localhost:3002/api/suscriptions/metodos-pago', {
           id_usuario: Number(storedUser.id_usuario),
@@ -50,7 +50,7 @@ const CheckoutPage = () => {
         idMetodoFinal = mpRes.data.metodo_pago.id_metodo;
       }
 
-      // Paso 2: Crear la Suscripción ligada al idMetodoFinal
+    
       await axios.post('http://localhost:3002/api/suscriptions/suscribir', {
         id_usuario: Number(storedUser.id_usuario),
         id_plan: Number(planId),
@@ -74,7 +74,7 @@ const CheckoutPage = () => {
         
         <form onSubmit={handlePayment} className="space-y-6">
           
-          {/* SELECCIÓN DE MÉTODOS EXISTENTES */}
+          {/* SELECCIÓN DE METODOS EXISTENTES */}
           {savedMethods.length > 0 && (
             <div className="bg-[#27495F] p-4 rounded-xl border border-[#3a5a6f]">
               <label className="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-[#8AD5DF] mb-3 cursor-pointer">
@@ -102,7 +102,7 @@ const CheckoutPage = () => {
             </div>
           )}
 
-          {/* FORMULARIO PARA NUEVO MÉTODO */}
+          {/* FORMULARIO PARA NUEVO METODO */}
           {!useSaved && (
             <div className="space-y-6 transition-all">
               <div>

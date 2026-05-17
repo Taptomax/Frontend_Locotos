@@ -17,7 +17,7 @@ const EditProfile = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem('catalog-theme');
     if (savedTheme) setDarkMode(savedTheme === 'dark');
-    // Aquí podrías cargar los datos actuales del perfil si tuvieras un getProfileById
+    
   }, []);
 
   const toggleTheme = () => {

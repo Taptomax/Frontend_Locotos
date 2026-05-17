@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // IMPORTADO PARA LA NAVEGACIÓN DE RETORNO
+import { useNavigate } from 'react-router-dom'; 
 
 const ManageSubscriptionPage = () => {
   const [history, setHistory] = useState([]);
   const [status, setStatus] = useState(null);
   const storedUser = JSON.parse(localStorage.getItem('user'));
-  const navigate = useNavigate(); // INSTANCIADO
+  const navigate = useNavigate(); 
 
   const fetchSubscriptionData = () => {
     if (storedUser?.id_usuario) {
-      // 1. Obtener Historial de Facturación
+     
       axios.get(`http://localhost:3002/api/suscriptions/historial/${storedUser.id_usuario}`)
         .then(res => setHistory(res.data))
         .catch(err => console.error("Error al obtener historial:", err));
 
-      // 2. Obtener Estado en tiempo real de la membresía
+      
       axios.get(`http://localhost:3002/api/suscriptions/status/${storedUser.id_usuario}`)
         .then(res => setStatus(res.data))
         .catch(err => console.error("Error al obtener status:", err));
@@ -26,7 +26,7 @@ const ManageSubscriptionPage = () => {
     fetchSubscriptionData();
   }, []);
 
-  // Función para alternar renovación automática
+ 
   const handleToggleRenovacion = async () => {
     try {
       await axios.post('http://localhost:3002/api/suscriptions/alternar-renovacion', { id_usuario: storedUser.id_usuario });
@@ -37,7 +37,7 @@ const ManageSubscriptionPage = () => {
     }
   };
 
-  // Función para cancelar la suscripción de forma tajante
+  
   const handleCancelarSuscripcion = async () => {
     if (window.confirm("¿Estás seguro de que deseas cancelar tu suscripción inmediatamente? Perderás acceso.")) {
       try {

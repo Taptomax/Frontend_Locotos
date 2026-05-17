@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Importado para la navegación distribuida
+import { useNavigate } from 'react-router-dom'; 
 import './CatalogPage.css'; 
 
 const IconSun  = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
@@ -10,7 +10,7 @@ const CatalogPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
-  const navigate = useNavigate(); // Instanciado
+  const navigate = useNavigate(); 
 
   const dm = darkMode;
 
@@ -54,7 +54,7 @@ const CatalogPage = () => {
         {dm ? <IconSun /> : <IconMoon />}
       </button>
 
-      {/* BOTÓN INDEPENDIENTE DE SUSCRIPCIONES (Prueba de sistema distribuido) */}
+      {/* BOTÓN INDEPENDIENTE DE SUSCRIPCIONES*/}
       <button 
         type="button" 
         onClick={() => navigate('/subscription/manage')} 

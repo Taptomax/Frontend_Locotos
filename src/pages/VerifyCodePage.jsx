@@ -15,7 +15,7 @@ const VerifyCodePage = () => {
 
   const dm = darkMode;
 
-  // Sincronizar tema con localStorage
+  
   useEffect(() => {
     const savedTheme = localStorage.getItem('catalog-theme');
     if (savedTheme) setDarkMode(savedTheme === 'dark');

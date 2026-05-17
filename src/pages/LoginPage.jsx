@@ -29,11 +29,11 @@ const LoginPage = () => {
     if (data && data.token) {
       const userToSave = data.user || data.usuario || data;
 
-      // Guardar en localStorage
+      
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(userToSave));
 
-      // VALIDACIÓN DE SUSCRIPCIÓN 
+      
       try {
         const res = await axios.get(`http://localhost:3002/api/suscriptions/status/${userToSave.id_usuario}`);
         
