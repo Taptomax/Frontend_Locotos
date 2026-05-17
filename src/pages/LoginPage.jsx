@@ -35,7 +35,7 @@ const LoginPage = () => {
 
       // VALIDACIÓN DE SUSCRIPCIÓN 
       try {
-        const res = await axios.get(`http://localhost:3001/api/suscriptions/status/${userToSave.id_usuario}`);
+        const res = await axios.get(`http://localhost:3002/api/suscriptions/status/${userToSave.id_usuario}`);
         
 
         if (res.data.tiene_acceso === true) {

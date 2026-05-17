@@ -8,7 +8,7 @@ const PlansPage = () => {
 
   useEffect(() => {
     // Corregido con el prefijo /suscriptions de la API
-    axios.get('http://localhost:3001/api/suscriptions/planes')
+    axios.get('http://localhost:3002/api/suscriptions/planes')
       .then(res => setPlans(res.data))
       .catch(err => console.error("Error al cargar planes:", err));
   }, []);

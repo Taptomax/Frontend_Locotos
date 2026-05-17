@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Importado para la navegación distribuida
 import './CatalogPage.css'; 
 
-// Iconos idénticos al Login/Registro
 const IconSun  = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
 const IconMoon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
 
@@ -10,6 +10,7 @@ const CatalogPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
+  const navigate = useNavigate(); // Instanciado
 
   const dm = darkMode;
 
@@ -44,13 +45,26 @@ const CatalogPage = () => {
 
   return (
     <div className={`catalog-theme-wrapper ${dm ? 'dark-mode' : ''}`}>
-      {/* El Botón de Toggle idéntico */}
+      {/* Botón de cambio de Tema */}
       <button 
         type="button" 
         onClick={toggleTheme} 
         className="theme-toggle-fixed"
       >
         {dm ? <IconSun /> : <IconMoon />}
+      </button>
+
+      {/* BOTÓN INDEPENDIENTE DE SUSCRIPCIONES (Prueba de sistema distribuido) */}
+      <button 
+        type="button" 
+        onClick={() => navigate('/subscription/manage')} 
+        style={{
+          position: 'fixed', top: '20px', right: '80px', zIndex: 1000,
+          background: '#E182CB', color: '#fff', border: 'none',
+          padding: '8px 16px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer'
+        }}
+      >
+        💳 Mis Suscripciones
       </button>
 
       <header className="catalog-header">
