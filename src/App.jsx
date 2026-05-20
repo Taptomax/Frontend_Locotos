@@ -10,6 +10,7 @@ import CatalogPage from './pages/catalog/CatalogPage';
 import PlansPage from './pages/subscription/PlansPage';
 import CheckoutPage from './pages/subscription/CheckoutPage';
 import ManageSubscriptionPage from './pages/subscription/ManageSubscriptionPage';
+import MyListPage from './pages/mylist/MyListPage';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/subscription/plans" element={<PlansPage />} />
         <Route path="/subscription/checkout/:planId" element={<CheckoutPage />} />
         <Route path="/subscription/manage" element={<ManageSubscriptionPage />} />
+        <Route path="/mylist" element={<MyListPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
       </Routes>
     </Router>

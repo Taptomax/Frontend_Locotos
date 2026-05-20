@@ -42,18 +42,18 @@
 
 .logo-text {
   font-family: 'Syne', sans-serif;
-  font-size: 2.8rem; /* Un poco más grande para que luzca */
+  font-size: 2.8rem; 
   font-style: italic;
   font-weight: 800;
   background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: -1px; /* Relajamos un poco el tracking para que no se encimen */
+  letter-spacing: -1px; 
   
-  /* --- ESTO ARREGLA EL CORTE --- */
-  padding: 0.2em 0; /* Da espacio arriba y abajo para que el italic no se corte */
-  line-height: 1.2; /* Asegura que la caja de texto sea más alta que la fuente */
-  display: inline-block; /* Permite que el padding funcione correctamente */
+  
+  padding: 0.2em 0; 
+  line-height: 1.2; 
+  display: inline-block; 
 }
 
 .logo-text span {
