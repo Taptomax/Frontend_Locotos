@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from 'axios'; 
 
 const CheckoutPage = () => {
   const { planId } = useParams();
   const navigate = useNavigate();
   
-  
   const [tipoMetodo, setTipoMetodo] = useState('Tarjeta de Crédito');
   const [proveedor, setProveedor] = useState('Visa');
-  
   
   const [savedMethods, setSavedMethods] = useState([]);
   const [useSaved, setUseSaved] = useState(false);
@@ -21,7 +19,6 @@ const CheckoutPage = () => {
   useEffect(() => {
     if (!storedUser) return navigate('/login');
     
-   
     axios.get(`http://localhost:3002/api/suscriptions/metodos-pago/${storedUser.id_usuario}`)
       .then(res => {
         setSavedMethods(res.data);
@@ -40,7 +37,6 @@ const CheckoutPage = () => {
     try {
       let idMetodoFinal = selectedMethodId;
 
-     
       if (!useSaved) {
         const mpRes = await axios.post('http://localhost:3002/api/suscriptions/metodos-pago', {
           id_usuario: Number(storedUser.id_usuario),
@@ -50,7 +46,6 @@ const CheckoutPage = () => {
         idMetodoFinal = mpRes.data.metodo_pago.id_metodo;
       }
 
-    
       await axios.post('http://localhost:3002/api/suscriptions/suscribir', {
         id_usuario: Number(storedUser.id_usuario),
         id_plan: Number(planId),
@@ -58,7 +53,19 @@ const CheckoutPage = () => {
       });
 
       alert("¡Suscripción procesada con éxito!");
-      navigate('/perfiles');
+
+      
+      const userToUpdate = JSON.parse(localStorage.getItem('user')) || {};
+
+    
+      userToUpdate.estado = "activo";
+
+      
+      localStorage.setItem('user', JSON.stringify(userToUpdate));
+
+      
+      navigate('/catalog', { replace: true });
+
     } catch (error) {
       console.error("Error en facturación:", error);
       alert(error.response?.data?.message || "Error al procesar el pago.");

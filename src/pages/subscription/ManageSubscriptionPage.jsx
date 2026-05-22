@@ -10,12 +10,10 @@ const ManageSubscriptionPage = () => {
 
   const fetchSubscriptionData = () => {
     if (storedUser?.id_usuario) {
-     
       axios.get(`http://localhost:3002/api/suscriptions/historial/${storedUser.id_usuario}`)
         .then(res => setHistory(res.data))
         .catch(err => console.error("Error al obtener historial:", err));
 
-      
       axios.get(`http://localhost:3002/api/suscriptions/status/${storedUser.id_usuario}`)
         .then(res => setStatus(res.data))
         .catch(err => console.error("Error al obtener status:", err));
@@ -26,7 +24,6 @@ const ManageSubscriptionPage = () => {
     fetchSubscriptionData();
   }, []);
 
- 
   const handleToggleRenovacion = async () => {
     try {
       await axios.post('http://localhost:3002/api/suscriptions/alternar-renovacion', { id_usuario: storedUser.id_usuario });
@@ -37,13 +34,25 @@ const ManageSubscriptionPage = () => {
     }
   };
 
-  
   const handleCancelarSuscripcion = async () => {
     if (window.confirm("¿Estás seguro de que deseas cancelar tu suscripción inmediatamente? Perderás acceso.")) {
       try {
         await axios.post('http://localhost:3002/api/suscriptions/cancelar', { id_usuario: storedUser.id_usuario });
         alert("Suscripción cancelada exitosamente.");
         fetchSubscriptionData();
+
+      
+        const userToUpdate = JSON.parse(localStorage.getItem('user')) || {};
+        
+       
+        userToUpdate.estado = "inactivo";
+        
+       
+        localStorage.setItem('user', JSON.stringify(userToUpdate));
+        
+       
+        navigate('/subscription/plans', { replace: true });
+
       } catch (error) {
         alert("Error al cancelar la suscripción.");
       }
