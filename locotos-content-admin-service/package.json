@@ -1,0 +1,14 @@
+{
+  "name": "locotos-content-admin-service",
+  "version": "1.0.0",
+  "description": "Modulo independiente para HU-9 detalles/recomendaciones y HU-19 estadisticas de contenido.",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "mysql2": "^3.22.1"
+  }
+}

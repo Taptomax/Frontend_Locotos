@@ -113,6 +113,15 @@
   overflow: hidden;
 }
 
+.poster-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
 .poster-img {
   width: 100%;
   aspect-ratio: 2/3;
@@ -155,6 +164,30 @@
   font-size: 1rem;
   font-weight: 700;
   line-height: 1.2;
+}
+
+.content-actions {
+  display: grid;
+  grid-template-columns: 1fr 0.65fr;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.content-actions button {
+  min-height: 36px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.content-actions .content-play {
+  background: var(--accent-2);
+  border-color: var(--accent-2);
+  color: #16303b;
 }
 
 /* Loading state */

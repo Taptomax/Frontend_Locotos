@@ -12,6 +12,9 @@ import CheckoutPage from './pages/subscription/CheckoutPage';
 import ManageSubscriptionPage from './pages/subscription/ManageSubscriptionPage';
 import MyListPage from './pages/mylist/MyListPage';
 import SettingsPage from "./pages/catalog/SettingsPage";
+import DetailsPage from './pages/details/DetailsPage';
+import WatchPage from './pages/watch/WatchPage';
+import AdminContentPage from './pages/admin/AdminContentPage';
 
 
 const ProtectedRoute = ({ children }) => {
@@ -51,8 +54,14 @@ function App() {
         <Route path="/create-profile" element={<ProtectedRoute><CreateProfile /></ProtectedRoute>} />
         <Route path="/edit-profile/:id" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
+        <Route path="/details/:id" element={<DetailsPage />} />
+        <Route path="/watch/:contentId" element={<WatchPage />} />
         <Route path="/mylist" element={<ProtectedRoute><MyListPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+
+        {/* Modulo independiente de administracion de contenido y estadisticas */}
+        <Route path="/admin" element={<Navigate to="/admin/content" replace />} />
+        <Route path="/admin/content" element={<AdminContentPage />} />
 
         {/* Captura cualquier link roto y lo manda al login */}
         <Route path="*" element={<Navigate to="/login" replace />} />

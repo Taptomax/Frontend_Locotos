@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getCatalog, getContentId } from '../../services/contentService';
 import './CatalogPage.css'; 
 
 const IconSun  = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
@@ -10,15 +11,6 @@ const IconHeartEmpty = () => <svg className="w-5 h-5" fill="none" stroke="curren
 const IconHeartFull  = () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style={{ color: '#E182CB' }}><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3c1.749 0 3.3 1.01 4.142 2.525C12.675 4.01 14.225 3 15.97 3 18.944 3 21.41 5.322 21.41 8.25c0 3.924-2.438 7.11-4.73 9.28a25.117 25.117 0 01-4.245 3.17 15.181 15.181 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>;
 const IconShare = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186l5.566-3.13m-5.566 3.13l5.566 3.13m0 0a2.25 2.25 0 103.933 2.185 2.25 2.25 0 00-3.933-2.185zm-.002-10.423a2.25 2.25 0 113.933 2.185 2.25 2.25 0 01-3.933-2.185z" /></svg>;
 const IconUser = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>;
-
-const getMovieId = (title) => {
-  if (!title) return 0;
-  let hash = 0;
-  for (let i = 0; i < title.length; i++) {
-    hash = title.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash); 
-};
 
 const CatalogPage = () => {
   const [products, setProducts] = useState([]);
@@ -42,8 +34,8 @@ const CatalogPage = () => {
 
     const fetchInitialData = async () => {
       try {
-        const catalogRes = await axios.get('http://localhost:3001/api/catalog');
-        setProducts(catalogRes.data);
+        const catalogData = await getCatalog();
+        setProducts(catalogData);
 
         if (storedUser?.id_usuario) {
           const favsRes = await axios.get(`http://localhost:3010/favorites/user/${storedUser.id_usuario}`);
@@ -224,9 +216,9 @@ const CatalogPage = () => {
 
       <main className="catalog-grid">
         {products.map((c) => {
-          const contentId = getMovieId(c.titulo || c.name);
+          const contentId = getContentId(c);
           const isFav = favContentIds.includes(Number(contentId));
-          const shareUrl = `${window.location.origin}/catalog?watch=${contentId}`;
+          const shareUrl = `${window.location.origin}/details/${contentId}`;
           const shareText = `¡Te recomiendo ver "${c.titulo || c.name}" en LOCOTOS Streaming! Míralo aquí: ${shareUrl}`;
 
           return (
@@ -298,11 +290,18 @@ const CatalogPage = () => {
               )}
 
               <div className="poster-container">
-                <img 
-                  src={c.poster || c.imagen_url || 'https://via.placeholder.com/300x450'} 
-                  alt={c.titulo} 
-                  className="poster-img"
-                />
+                <button
+                  type="button"
+                  className="poster-button"
+                  onClick={() => navigate(`/details/${contentId}`)}
+                  title={`Ver detalles de ${c.titulo || c.name}`}
+                >
+                  <img 
+                    src={c.poster || c.imagen_url || 'https://via.placeholder.com/300x450'} 
+                    alt={c.titulo || c.name} 
+                    className="poster-img"
+                  />
+                </button>
                 <div className="card-overlay">
                   <span className="calificacion-badge">⭐ {c.calificacion || '8.0'}</span>
                 </div>
@@ -310,6 +309,14 @@ const CatalogPage = () => {
               <div className="card-info">
                 <span className="content-type">{c.tipo || 'Película'}</span>
                 <h3 className="content-title">{c.titulo || c.name}</h3>
+                <div className="content-actions">
+                  <button type="button" onClick={() => navigate(`/details/${contentId}`)}>
+                    Detalles
+                  </button>
+                  <button type="button" className="content-play" onClick={() => navigate(`/watch/${contentId}`)}>
+                    Ver
+                  </button>
+                </div>
               </div>
             </div>
           );
