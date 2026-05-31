@@ -11,6 +11,7 @@ import PlansPage from './pages/subscription/PlansPage';
 import CheckoutPage from './pages/subscription/CheckoutPage';
 import ManageSubscriptionPage from './pages/subscription/ManageSubscriptionPage';
 import MyListPage from './pages/mylist/MyListPage';
+import SettingsPage from "./pages/catalog/SettingsPage";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -51,6 +52,7 @@ function App() {
         <Route path="/edit-profile/:id" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
         <Route path="/mylist" element={<ProtectedRoute><MyListPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
         {/* Captura cualquier link roto y lo manda al login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
