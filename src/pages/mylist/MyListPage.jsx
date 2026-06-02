@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getCatalog, getContentId } from '../../services/contentService';
 import '../catalog/CatalogPage.css'; 
 
-
-const getMovieId = (title) => {
-  if (!title) return 0;
-  let hash = 0;
-  for (let i = 0; i < title.length; i++) {
-    hash = title.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash);
-};
 
 const MyListPage = () => {
   const [products, setProducts] = useState([]);
@@ -23,8 +15,8 @@ const MyListPage = () => {
   useEffect(() => {
     const fetchListData = async () => {
       try {
-        const catalogRes = await axios.get('http://localhost:3001/api/catalog');
-        setProducts(catalogRes.data);
+        const catalogData = await getCatalog();
+        setProducts(catalogData);
 
         if (storedUser?.id_usuario) {
           const favsRes = await axios.get(`http://localhost:3010/favorites/user/${storedUser.id_usuario}`);
@@ -81,7 +73,7 @@ const MyListPage = () => {
         ) : (
           favContentIds.map((idFavorito) => {
            
-            const movie = products.find(p => getMovieId(p.titulo || p.name) === idFavorito);
+            const movie = products.find(p => getContentId(p) === idFavorito);
             if (!movie) return null;
 
             return (

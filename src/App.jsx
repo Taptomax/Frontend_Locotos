@@ -12,7 +12,9 @@ import CheckoutPage from './pages/subscription/CheckoutPage';
 import ManageSubscriptionPage from './pages/subscription/ManageSubscriptionPage';
 import MyListPage from './pages/mylist/MyListPage';
 import SettingsPage from "./pages/catalog/SettingsPage";
+import DetailsPage from './pages/details/DetailsPage';
 import WatchPage from './pages/watch/WatchPage';
+import AdminContentPage from './pages/admin/AdminContentPage';
 
 // ─── COMPONENTES DE PRUEBA MIAURI ───────────────────────────────────────────
 function VideoPlayerMiauri() {
@@ -92,7 +94,7 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   return (
-    <>
+    <> {/* Etiqueta de apertura Fragment */}
       <Router>
         <Routes>
           {/* Redirección Inicial */}
@@ -103,26 +105,31 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-email" element={<VerifyCodePage />} />
 
-        {/*  PASARELA DE PAGO (Accesible para inactivos para que puedan activar su suscripción) */}
-        <Route path="/subscription/plans" element={<PlansPage />} />
-        <Route path="/subscription/checkout/:planId" element={<CheckoutPage />} />
-        <Route path="/subscription/manage" element={<ManageSubscriptionPage />} />
-        
-        {/*  TODAS LAS DEMÁS RUTAS BLINDADAS (Solo entran si 'estado' es 'activo') */}
-        <Route path="/perfiles" element={<ProtectedRoute><ProfilesPage /></ProtectedRoute>} />
-        <Route path="/create-profile" element={<ProtectedRoute><CreateProfile /></ProtectedRoute>} />
-        <Route path="/edit-profile/:id" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-        <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
-        <Route path="/mylist" element={<ProtectedRoute><MyListPage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-        <Route path="/watch/:contentId" element={<ProtectedRoute><WatchPage /></ProtectedRoute>} />
+          {/* PASARELA DE PAGO (Accesible para inactivos para que puedan activar su suscripción) */}
+          <Route path="/subscription/plans" element={<PlansPage />} />
+          <Route path="/subscription/checkout/:planId" element={<CheckoutPage />} />
+          <Route path="/subscription/manage" element={<ManageSubscriptionPage />} />
+          
+          {/* TODAS LAS DEMÁS RUTAS BLINDADAS (Solo entran si 'estado' es 'activo') */}
+          <Route path="/perfiles" element={<ProtectedRoute><ProfilesPage /></ProtectedRoute>} />
+          <Route path="/create-profile" element={<ProtectedRoute><CreateProfile /></ProtectedRoute>} />
+          <Route path="/edit-profile/:id" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+          <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
+          <Route path="/details/:id" element={<DetailsPage />} />
+          <Route path="/mylist" element={<ProtectedRoute><MyListPage /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/watch/:contentId" element={<ProtectedRoute><WatchPage /></ProtectedRoute>} />
+
+          {/* Modulo independiente de administracion de contenido y estadisticas */}
+          <Route path="/admin" element={<Navigate to="/admin/content" replace />} />
+          <Route path="/admin/content" element={<AdminContentPage />} />
 
           {/* Captura cualquier link roto y lo manda al login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
-    </>
-  ); //
+    </> 
+  );
 }
 
 export default App;

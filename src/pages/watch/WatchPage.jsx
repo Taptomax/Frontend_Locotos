@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getContentById, registerPlayback } from '../../services/contentService';
 import './WatchPage.css';
 
 const IconArrowLeft = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>;
@@ -108,6 +109,7 @@ const WatchPage = () => {
           </div>
         </div>
 
+        {/* Content Info */}
         <div className="video-info">
           <div className="info-header">
             <h1 className="content-title">{content.titulo || content.name}</h1>
@@ -115,22 +117,50 @@ const WatchPage = () => {
           </div>
 
           <div className="info-details">
-            {content.descripcion && <p className="description">{content.descripcion}</p>}
+            {(content.descripcion || content.sinopsis) && (
+              <p className="description">{content.descripcion || content.sinopsis}</p>
+            )}
             {content.calificacion && (
               <div className="rating">
                 <span className="star">⭐</span>
                 <span className="rating-value">{content.calificacion}</span>
               </div>
             )}
-            {content.duracion && <p className="duration">⏱️ Duración: {content.duracion}</p>}
-            {content.anio && <p className="year">📅 Año: {content.anio}</p>}
+            {content.duracion && (
+              <p className="duration">
+                ⏱️ Duración: {content.duracion}
+              </p>
+            )}
+            {content.anio && (
+              <p className="year">
+                📅 Año: {content.anio}
+              </p>
+            )}
+            {content.director && (
+              <p className="director">
+                🎬 Director: {content.director}
+              </p>
+            )}
+            {content.actores && (
+              <p className="actors">
+                👥 Actores: {content.actores}
+              </p>
+            )}
           </div>
 
           <div className="action-buttons">
-            <button type="button" onClick={() => navigate('/catalog')} className="btn-back-full">
+            <button 
+              type="button"
+              onClick={() => navigate('/catalog')}
+              className="btn-back-full"
+            >
               ← Volver al catálogo
             </button>
-            <button type="button" onClick={() => navigate('/mylist')} className="btn-mylist">
+            <button 
+              type="button"
+              onClick={() => navigate('/mylist')}
+              className="btn-mylist"
+            >
               🍿 Mi Lista
             </button>
           </div>

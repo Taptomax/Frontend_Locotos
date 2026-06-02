@@ -1,7 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Syne:wght@800&display=swap');
 
+/* ============================================
+   VARIABLES Y TEMAS
+   ============================================ */
 .catalog-theme-wrapper {
-  /* Variables de la API original */
   --bg-primary: #FAFBFD;
   --bg-secondary: #f0f1f5;
   --text-primary: #27495F;
@@ -10,17 +12,22 @@
   --accent-2: #8AD5DF;
   --border-color: #d0d2d8;
   --card-bg: #ffffff;
-  
+  --navbar-bg: rgba(250, 251, 253, 0.88);
+  --navbar-border: rgba(208, 210, 216, 0.6);
+  --dropdown-bg: #ffffff;
+  --dropdown-item-bg: #f0f1f5;
+
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  padding: 2rem 5%;
+  /* Espacio superior para la navbar fija */
+  padding: 5.5rem 5% 2rem;
   font-family: 'Inter', sans-serif;
   transition: background 0.5s ease;
 }
 
 .catalog-theme-wrapper.dark-mode {
-  --bg-primary: #1a2d38; /* Ajustado para que combine con tu Login */
+  --bg-primary: #1a2d38;
   --bg-secondary: #1f3a4a;
   --text-primary: #FAFBFD;
   --text-secondary: #8AD5DF;
@@ -28,9 +35,322 @@
   --accent-2: #7D7ECF;
   --border-color: #3a5a6f;
   --card-bg: #223e4f;
+  --navbar-bg: rgba(26, 45, 56, 0.92);
+  --navbar-border: rgba(58, 90, 111, 0.7);
+  --dropdown-bg: #1f3a4a;
+  --dropdown-item-bg: #27495F;
 }
 
-/* Header Estilo Locotos */
+/* ============================================
+   NAVBAR HORIZONTAL FIJA
+   ============================================ */
+.locotos-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--navbar-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Logo dentro de la navbar */
+.navbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem;
+  font-style: italic;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  margin: 0;
+}
+
+.navbar-logo span {
+  -webkit-text-fill-color: var(--accent-1);
+}
+
+/* Contenedor de acciones (lado derecho) */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Separador visual */
+.navbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+  margin: 0 6px;
+  opacity: 0.6;
+}
+
+/* Botón icónico (cuadrado redondeado) */
+.navbar-icon-btn {
+  position: relative;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.navbar-icon-btn:hover,
+.navbar-icon-btn.active {
+  background: var(--dropdown-item-bg);
+  border-color: var(--border-color);
+  color: var(--accent-2);
+}
+
+/* Badge de conteo (sobre el reloj) */
+.navbar-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--accent-2);
+  color: #1f3a4a;
+  font-size: 9px;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 1px 5px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+/* Botón "Mi Lista" — pill con relleno */
+.navbar-pill-btn {
+  background: var(--dropdown-item-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0 16px;
+  height: 40px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.navbar-pill-btn:hover {
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+/* Botón de perfil con avatar */
+.navbar-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 4px 8px 4px 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navbar-profile-btn:hover,
+.navbar-profile-btn.active {
+  background: var(--dropdown-item-bg);
+  border-color: var(--border-color);
+}
+
+.navbar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.navbar-profile-chevron {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+/* ============================================
+   DROPDOWNS DE LA NAVBAR
+   ============================================ */
+.navbar-dropdown-wrapper {
+  position: relative;
+}
+
+.navbar-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--dropdown-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  padding: 14px;
+  z-index: 1001;
+  animation: dropdownIn 0.18s ease;
+}
+
+.navbar-dropdown--sm { width: 280px; }
+.navbar-dropdown--md { width: 320px; }
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-heading {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent-2);
+  margin: 0 0 10px 2px;
+}
+
+.dropdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  /* Scrollbar personalizado */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.dropdown-empty {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 0;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Item de media (poster + título) */
+.dropdown-media-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--dropdown-item-bg);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.dropdown-thumb {
+  width: 36px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.dropdown-media-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dropdown-media-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-media-type {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.dropdown-remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.dropdown-remove-btn:hover {
+  background: rgba(225, 130, 203, 0.15);
+  color: var(--accent-1);
+}
+
+/* Item de notificación */
+.dropdown-notif-item {
+  padding: 8px 12px;
+  background: var(--dropdown-item-bg);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+/* Footer del dropdown (Configuración) */
+.dropdown-footer {
+  border-top: 1px solid var(--border-color);
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.dropdown-footer-btn {
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 8px 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.dropdown-footer-btn:hover {
+  color: var(--accent-2);
+  background: var(--dropdown-item-bg);
+  padding-left: 10px;
+}
+
+/* ============================================
+   HEADER DE MARCA (ahora es solo el catálogo, sin logo duplicado)
+   ============================================ */
 .catalog-header {
   display: flex;
   justify-content: space-between;
@@ -42,18 +362,16 @@
 
 .logo-text {
   font-family: 'Syne', sans-serif;
-  font-size: 2.8rem; 
+  font-size: 2.8rem;
   font-style: italic;
   font-weight: 800;
   background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: -1px; 
-  
-  
-  padding: 0.2em 0; 
-  line-height: 1.2; 
-  display: inline-block; 
+  letter-spacing: -1px;
+  padding: 0.2em 0;
+  line-height: 1.2;
+  display: inline-block;
 }
 
 .logo-text span {
@@ -68,26 +386,9 @@
   font-weight: 700;
 }
 
-/* Botón de Tema */
-.theme-toggle-btn {
-  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 0.7rem 1.5rem;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 0.8rem;
-  transition: all 0.3s;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.theme-toggle-btn:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-}
-
-/* Grid y Cards */
+/* ============================================
+   GRID Y CARDS
+   ============================================ */
 .catalog-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -157,7 +458,29 @@
   line-height: 1.2;
 }
 
-/* Loading state */
+/* ============================================
+   PLAY BUTTON
+   ============================================ */
+.content-card .play-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.content-card:hover .play-button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translate(-50%, -50%) scale(1.1) !important;
+  background: var(--accent-1) !important;
+  box-shadow: 0 10px 25px rgba(225, 130, 203, 0.5) !important;
+}
+
+.content-card .play-button:hover {
+  transform: translate(-50%, -50%) scale(1.2) !important;
+  filter: brightness(1.1);
+}
+
+/* ============================================
+   LOADING Y FOOTER
+   ============================================ */
 .catalog-loading {
   height: 100vh;
   display: flex;
@@ -170,7 +493,6 @@
   color: #8AD5DF;
   font-weight: 900;
   letter-spacing: 5px;
-  animate: pulse 1.5s infinite;
 }
 
 .catalog-footer {
@@ -182,69 +504,17 @@
   opacity: 0.5;
 }
 
-.theme-toggle-fixed {
-  /* Cambiamos absolute por fixed para que siempre esté en la esquina 
-     independientemente del scroll o del flexbox del padre */
-  position: fixed; 
-  top: 2rem;
-  right: 2rem;
-  
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border: none;
-  z-index: 9999; /* Asegura que esté por encima de las cards */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  /* Glassmorphism sutil para que resalte en ambos modos */
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Colores en Modo Oscuro */
-.catalog-theme-wrapper.dark-mode .theme-toggle-fixed {
-  background: rgba(138, 213, 223, 0.15); /* palette-sky suave */
-  color: #8AD5DF; 
-  border: 1px solid rgba(138, 213, 223, 0.2);
-}
-
-/* Colores en Modo Claro */
-.catalog-theme-wrapper:not(.dark-mode) .theme-toggle-fixed {
-  background: rgba(39, 73, 95, 0.05); /* palette-deep muy suave */
-  color: #27495F;
-  border: 1px solid rgba(39, 73, 95, 0.1);
-}
-
-.theme-toggle-fixed:hover {
-  transform: scale(1.1) rotate(12deg);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* ==========================================
-   MÓDULO DE REPRODUCCIÓN (PLAY BUTTON)
-   ========================================== */
-
-/* 1. Estado inicial del botón dentro de la tarjeta */
-.content-card .play-button {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* 2. Cuando el usuario pasa el mouse sobre la tarjeta (Hover) */
-.content-card:hover .play-button {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: translate(-50%, -50%) scale(1.1) !important; /* Crece ligeramente */
-  background: var(--accent-1) !important; /* Usa el color rosa de tus variables */
-  box-shadow: 0 10px 25px rgba(225, 130, 203, 0.5) !important;
-}
-
-/* 3. Efecto extra cuando pones el cursor directamente sobre el botón de Play */
-.content-card .play-button:hover {
-  transform: translate(-50%, -50%) scale(1.2) !important;
-  filter: brightness(1.1);
+/* ============================================
+   RESPONSIVE — pantallas pequeñas
+   ============================================ */
+@media (max-width: 640px) {
+  .navbar-pill-btn span {
+    display: none;
+  }
+  .navbar-pill-btn {
+    padding: 0 12px;
+  }
+  .locotos-navbar {
+    padding: 0 4%;
+  }
 }

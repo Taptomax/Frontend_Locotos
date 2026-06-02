@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "titulo": "La Ruta del Locoto",
+    "tipo": "Pelicula",
+    "genero": "Aventura",
+    "anio": 2024,
+    "director": "Valeria Quiroga",
+    "autor": "Mario Salazar",
+    "temporadas": null,
+    "reparto": [
+      "Ana Rojas",
+      "Luis Peredo",
+      "Camila Arce"
+    ],
+    "sinopsis": "Una cocinera recorre Bolivia para recuperar una receta familiar antes de que se pierda para siempre.",
+    "trailer_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "poster": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80",
+    "duracion": "1h 48m",
+    "calificacion": "8.4",
+    "reproducciones": 124
+  },
+  {
+    "id": 2,
+    "titulo": "Cordillera Roja",
+    "tipo": "Serie",
+    "genero": "Aventura",
+    "anio": 2023,
+    "director": "Andres Baldiviezo",
+    "autor": "Elena Vargas",
+    "temporadas": 2,
+    "reparto": [
+      "Diego Molina",
+      "Noelia Paz",
+      "Ruben Choque"
+    ],
+    "sinopsis": "Un equipo de rescate enfrenta tormentas, secretos y decisiones limite en la zona andina.",
+    "trailer_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "poster": "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=600&q=80",
+    "duracion": "8 episodios",
+    "calificacion": "8.1",
+    "reproducciones": 98
+  },
+  {
+    "id": 3,
+    "titulo": "Codigo Salar",
+    "tipo": "Pelicula",
+    "genero": "Suspenso",
+    "anio": 2025,
+    "director": "Nicolas Pinto",
+    "autor": "Sofia Mercado",
+    "temporadas": null,
+    "reparto": [
+      "Marcos Linares",
+      "Paola Guzman",
+      "Hugo Rios"
+    ],
+    "sinopsis": "Una analista descubre una red de datos ocultos bajo una operacion minera aparentemente normal.",
+    "trailer_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "poster": "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=80",
+    "duracion": "2h 03m",
+    "calificacion": "8.7",
+    "reproducciones": 183
+  },
+  {
+    "id": 4,
+    "titulo": "Archivo 16",
+    "tipo": "Serie",
+    "genero": "Suspenso",
+    "anio": 2022,
+    "director": "Renata Suarez",
+    "autor": "Tomas Villca",
+    "temporadas": 1,
+    "reparto": [
+      "Lucia Flores",
+      "Esteban Calle",
+      "Mara Ibarra"
+    ],
+    "sinopsis": "Una periodista reabre un caso archivado y encuentra pruebas que cambian toda la historia.",
+    "trailer_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "poster": "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=600&q=80",
+    "duracion": "6 episodios",
+    "calificacion": "7.9",
+    "reproducciones": 77
+  },
+  {
+    "id": 5,
+    "titulo": "Domingos de Barrio",
+    "tipo": "Serie",
+    "genero": "Comedia",
+    "anio": 2024,
+    "director": "Carla Mamani",
+    "autor": "Pedro Aponte",
+    "temporadas": 3,
+    "reparto": [
+      "Javier Soria",
+      "Daniela Arias",
+      "Oscar Terceros"
+    ],
+    "sinopsis": "Una familia intenta administrar una tienda vecinal mientras cada domingo trae un problema nuevo.",
+    "trailer_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "poster": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=600&q=80",
+    "duracion": "10 episodios",
+    "calificacion": "8.0",
+    "reproducciones": 141
+  },
+  {
+    "id": 6,
+    "titulo": "Plan Casi Perfecto",
+    "tipo": "Pelicula",
+    "genero": "Comedia",
+    "anio": 2021,
+    "director": "Gabriel Aramayo",
+    "autor": "Laura Ribera",
+    "temporadas": null,
+    "reparto": [
+      "Bruno Lopez",
+      "Adriana Torrico",
+      "Mateo Vaca"
+    ],
+    "sinopsis": "Dos amigos preparan una sorpresa que sale mal en cada paso, hasta convertir la ciudad en su escenario.",
+    "trailer_url": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "poster": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&q=80",
+    "duracion": "1h 35m",
+    "calificacion": "7.6",
+    "reproducciones": 63
+  }
+]
