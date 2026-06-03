@@ -154,7 +154,7 @@ if (!tokenDeSesion) {
       if (authRes.data && authRes.data.status === "authorized") { 
         const urlVideoOffline = authRes.data.url_video_offline; 
         
-        alert("¡Autorizado! Transfiriendo bytes del video... 📥");
+        alert("¡Autorizado! Transfiriendo bytes del video... ");
 
         const videoReq = await axios.get(urlVideoOffline, { responseType: 'blob' });
         const videoBlob = new Blob([videoReq.data], { type: 'video/mp4' }); 
@@ -173,7 +173,7 @@ if (!tokenDeSesion) {
         const updatedDownloads = [...existingDownloads.filter(i => i.id_contenido !== contentId), newItem];
         localStorage.setItem('locotos_downloads', JSON.stringify(updatedDownloads));
 
-        alert(`¡"${movie.titulo || movie.name}" guardada localmente para ver offline! ✅`);
+        alert(`¡"${movie.titulo || movie.name}" guardada localmente para ver offline andate a disfrutar locotolover! `);
       } else {
         alert("No se pudo autorizar la descarga. Verifica tus permisos.");
       }
@@ -273,7 +273,7 @@ if (!tokenDeSesion) {
             onClick={() => navigate('/mylist')}
             className="navbar-pill-btn"
           >
-            🍿 Mi Lista
+            Mi Lista
           </button>
 
           {/* BOTÓN VER MÁS TARDE */}
@@ -347,7 +347,7 @@ if (!tokenDeSesion) {
           {/* SEPARADOR */}
           <div className="navbar-divider" />
 
-          {/* BOTÓN PERFIL + FAVORITOS */}
+          {/* BOTON PERFIL + FAVORITOS */}
           <div className="navbar-dropdown-wrapper">
             <button
               type="button"
@@ -400,7 +400,7 @@ if (!tokenDeSesion) {
       </nav>
       
 
-      {/* ⏱️ NUEVA FILA HORIZONTAL: CONTINUAR VIENDO (ESTILO NETFLIX) */}
+      {/* NUEVA FILA HORIZONTAL: CONTINUAR VIENDO*/}
       {continueWatching.length > 0 && (
         <section className="continue-watching-section" style={{ padding: '0 60px', marginBottom: '40px' }}>
           <h2 style={{ fontSize: '24px', color: '#E182CB', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
