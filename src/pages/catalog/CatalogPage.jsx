@@ -53,7 +53,7 @@ const CatalogPage = () => {
           const favIds = (favsRes.data.favoritos || []).map(f => Number(f.id_contenido));
           setFavContentIds(favIds);
           const watchLaterRes = await axios.get(`http://localhost:3011/watch-later/${userIdNum}`);
-          const watchIds = (watchLaterRes.data.items || []).map(item => Number(item.id_contenido));
+          const watchIds = (Array.isArray(watchLaterRes.data) ? watchLaterRes.data : []).map(item => Number(item.id_contenido));
           setWatchLaterIds(watchIds);
         }
       } catch (error) {
@@ -90,7 +90,7 @@ const CatalogPage = () => {
     const yaEstaEnWatchLater = watchLaterIds.includes(idNum);
     try {
       if (yaEstaEnWatchLater) {
-        await axios.delete(`http://localhost:3011/watch-later/user/${userIdNum}/content/${idNum}`);
+        await axios.delete(`http://localhost:3011/watch-later/${userIdNum}/${idNum}`);
         setWatchLaterIds(prev => prev.filter(id => id !== idNum));
       } else {
         await axios.post('http://localhost:3011/watch-later', { id_usuario: userIdNum, id_contenido: idNum });
