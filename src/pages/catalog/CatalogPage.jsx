@@ -13,6 +13,7 @@ const IconHeartFull  = () => <svg className="w-5 h-5" fill="currentColor" viewBo
 const IconClock      = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2" /></svg>;
 const IconPlay       = () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>;
 
+
 const getMovieId = (title) => {
   if (!title) return 0;
   let hash = 0;
@@ -33,6 +34,7 @@ const CatalogPage = () => {
   const [activeShareId, setActiveShareId] = useState(null);
   const [watchLaterIds, setWatchLaterIds] = useState([]);
   const [showWatchLaterDropdown, setShowWatchLaterDropdown] = useState(false);
+  const [continueWatching, setContinueWatching] = useState([]);
 
   const navigate = useNavigate();
   const dm = darkMode;
@@ -44,17 +46,45 @@ const CatalogPage = () => {
 
     const fetchInitialData = async () => {
       try {
+      
         const catalogRes = await axios.get('http://localhost:3006/api/catalog');
-        setProducts(catalogRes.data);
+        const allProducts = catalogRes.data;
+        setProducts(allProducts);
 
         if (storedUser?.id_usuario) {
           const userIdNum = Number(storedUser.id_usuario);
+
+       
           const favsRes = await axios.get(`http://localhost:3010/favorites/user/${userIdNum}`);
           const favIds = (favsRes.data.favoritos || []).map(f => Number(f.id_contenido));
           setFavContentIds(favIds);
+
           const watchLaterRes = await axios.get(`http://localhost:3011/watch-later/${userIdNum}`);
           const watchIds = (watchLaterRes.data.items || []).map(item => Number(item.id_contenido));
           setWatchLaterIds(watchIds);
+
+       
+          const progressPromises = allProducts.map(async (movie) => {
+            const contentId = getMovieId(movie.titulo || movie.name);
+            try {
+              const res = await axios.get(`http://localhost:3003/reproduction/progress/user/${userIdNum}/content/${contentId}`);
+    
+              if (res.data && res.data.has_progress && !res.data.visto_completado) {
+                return {
+                  ...movie,
+                  id_contenido: contentId,
+                  segundo_actual: res.data.segundo_actual
+                };
+              }
+            } catch (err) {
+              
+            }
+            return null;
+          });
+
+          const progressResults = await Promise.all(progressPromises);
+          
+          setContinueWatching(progressResults.filter(item => item !== null));
         }
       } catch (error) {
         console.error("Error cargando componentes del ecosistema:", error);
@@ -80,6 +110,80 @@ const CatalogPage = () => {
       }
     } catch (error) {
       console.error("Error operando sobre la lista en MongoDB:", error);
+    }
+  };
+
+
+  const handleDownload = async (contentId, movie) => {
+   
+    const currentUserId = storedUser?.id_usuario || 3; 
+    
+    if (!currentUserId) return alert("Inicia sesión para descargar contenido.");
+    
+    
+    const tokenDeSesion = localStorage.getItem('token');
+
+if (!tokenDeSesion) {
+  alert("No hay token. Inicia sesión otra vez.");
+  return;
+}
+
+    if (!tokenDeSesion) {
+      console.error("❌ Error: No se encontró la clave 'token' en el LocalStorage.");
+      return alert("Error de autenticación: No se encontró tu token de sesión. Por favor, vuelve a iniciar sesión.");
+    }
+
+    try {
+      alert("Solicitando autorización de descarga... ⏳");
+
+    
+      const authRes = await axios.post(
+  'http://localhost:3010/downloads',
+  { 
+    id_usuario: Number(currentUserId), 
+    id_contenido: Number(contentId), 
+    dispositivo: "Web Browser" 
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  }
+);
+
+      if (authRes.data && authRes.data.status === "authorized") { 
+        const urlVideoOffline = authRes.data.url_video_offline; 
+        
+        alert("¡Autorizado! Transfiriendo bytes del video... 📥");
+
+        const videoReq = await axios.get(urlVideoOffline, { responseType: 'blob' });
+        const videoBlob = new Blob([videoReq.data], { type: 'video/mp4' }); 
+        
+        const localBlobUrl = URL.createObjectURL(videoBlob);
+
+        const existingDownloads = JSON.parse(localStorage.getItem('locotos_downloads') || '[]');
+        const newItem = {
+          id_contenido: contentId,
+          titulo: movie.titulo || movie.name,
+          poster: movie.poster || movie.imagen_url,
+          localUrl: localBlobUrl,
+          fecha: new Date().toISOString()
+        };
+
+        const updatedDownloads = [...existingDownloads.filter(i => i.id_contenido !== contentId), newItem];
+        localStorage.setItem('locotos_downloads', JSON.stringify(updatedDownloads));
+
+        alert(`¡"${movie.titulo || movie.name}" guardada localmente para ver offline! ✅`);
+      } else {
+        alert("No se pudo autorizar la descarga. Verifica tus permisos.");
+      }
+    } catch (error) {
+      console.error("Error en el flujo de descarga:", error);
+      if (error.response && error.response.status === 401) {
+        alert("Error 401: El token de seguridad no es válido o ha expirado. Prueba cerrando sesión y volviendo a entrar para renovarlo.");
+      } else {
+        alert("Error al procesar la descarga con el servidor.");
+      }
     }
   };
 
@@ -280,7 +384,10 @@ const CatalogPage = () => {
                     })
                   )}
                 </div>
-                <div className="dropdown-footer">
+                  <div className="dropdown-footer" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <button type="button" onClick={() => navigate('/downloads')} className="dropdown-footer-btn" style={{ textAlign: 'left', width: '100%' }}>
+                  📥 Mis Descargas
+                  </button>
                   <button type="button" onClick={() => navigate('/settings')} className="dropdown-footer-btn">
                     ⚙️ Configuración
                   </button>
@@ -291,6 +398,58 @@ const CatalogPage = () => {
 
         </div>
       </nav>
+      
+
+      {/* ⏱️ NUEVA FILA HORIZONTAL: CONTINUAR VIENDO (ESTILO NETFLIX) */}
+      {continueWatching.length > 0 && (
+        <section className="continue-watching-section" style={{ padding: '0 60px', marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '24px', color: '#E182CB', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            ⏱️ Continuar viendo para {storedUser?.nombre || 'usuario'}
+          </h2>
+          <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '15px' }}>
+            {continueWatching.map((movie) => (
+              <div key={`continue-${movie.id_contenido}`} className="content-card continue-card" style={{ 
+                flex: '0 0 220px', position: 'relative', background: '#162633', borderRadius: '12px', overflow: 'hidden' 
+              }}>
+                <div className="poster-container" style={{ height: '140px', overflow: 'hidden', position: 'relative' }}>
+                  <img src={movie.imagen_url || movie.poster} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  
+                  {/* Botón rápido de play que reanuda directamente */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/watch/${movie.id_contenido}`)}
+                    style={{
+                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                      background: 'rgba(138, 213, 223, 0.9)', border: 'none', borderRadius: '50%',
+                      width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                    }}
+                    title="Reanudar reproducción"
+                  >
+                    <IconPlay style={{ color: '#1f3a4a' }} />
+                  </button>
+                </div>
+
+                {/* Barra de progreso simulada abajo del poster */}
+                <div style={{ background: '#3a5a6f', height: '4px', width: '100%', position: 'relative' }}>
+                  <div style={{ 
+                    background: '#E182CB', 
+                    height: '100%', 
+                    width: '65%' /* Ponemos un porcentaje estático de barra o puedes calcularlo si tienes la duración total */
+                  }} />
+                </div>
+
+                <div style={{ padding: '10px' }}>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {movie.titulo || movie.name}
+                  </h4>
+                  <span style={{ fontSize: '11px', color: '#8AD5DF' }}>En el seg: {Math.floor(movie.segundo_actual)}s</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
 
       {/* CONTENIDO PRINCIPAL */}
       <main className="catalog-grid">
@@ -386,6 +545,36 @@ const CatalogPage = () => {
                 title={isWatchLater ? "Remover de Ver Más Tarde" : "Agregar a Ver Más Tarde"}
               >
                 <IconClock />
+              </button>
+
+              {/* 📥 NUEVO BOTÓN FLOTANTE DESCARGA (DEBAJO DE COMPARTIR) */}
+              <button
+                type="button"
+                onClick={() => handleDownload(contentId, c)}
+                style={{
+                  position: 'absolute', 
+                  top: '92px',
+                  right: '12px', 
+                  zIndex: 10,
+                  background: 'rgba(31, 58, 74, 0.75)', 
+                  border: 'none', 
+                  borderRadius: '50%',
+                  width: '36px', 
+                  height: '36px', 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  justifyContent: 'center', 
+                  cursor: 'pointer', 
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)', 
+                  color: '#8AD5DF'
+                }}
+                title="Descargar para ver offline"
+              >
+                {/* Icono de descarga nativo SVG */}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12l-4.5 4.5m0 0l-4.5-4.5m4.5 4.5V3" />
+                </svg>
               </button>
 
               {/* POSTER */}

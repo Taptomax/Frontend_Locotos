@@ -1,29 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { getContentById, registerPlayback } from '../../services/contentService';
 import './WatchPage.css';
-
-const IconArrowLeft = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>;
-const IconHome = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9m-9 11l4-4m0 0l4-4" /></svg>;
 
 const WatchPage = () => {
   const { contentId } = useParams();
   const navigate = useNavigate();
+
   const [content, setContent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
+  const [player, setPlayer] = useState(null);
+  const [progress, setProgress] = useState(0);
 
+  // USUARIO CORRECTO
+  const user = JSON.parse(localStorage.getItem("user"));
+  const id_usuario = user?.id_usuario;
+
+  // =========================
+  // CARGAR CONTENIDO + PROGRESO
+  // =========================
   useEffect(() => {
-    const savedTheme = localStorage.getItem('catalog-theme');
-    if (savedTheme) setDarkMode(savedTheme === 'dark');
 
-    const fetchContent = async () => {
+    const fetchData = async () => {
       try {
-        // Traemos el catálogo completo
         const catalogRes = await axios.get('http://localhost:3006/api/catalog');
-        
-        // Buscamos coincidencia calculando el hash del título (manteniendo tu lógica actual)
+
         const found = catalogRes.data.find(c => {
           let hash = 0;
           const title = c.titulo || c.name || '';
@@ -32,139 +33,187 @@ const WatchPage = () => {
           }
           return Math.abs(hash) === parseInt(contentId);
         });
-        
-        setContent(found || null);
+
+        if (!found) {
+          setContent(null);
+          setLoading(false);
+          return;
+        }
+
+        setContent(found);
+
+        const id_contenido = parseInt(contentId);
+
+        // CONSULTAR PROGRESO (PUERTO 3003)
+        try {
+          const res = await axios.get(
+            `http://localhost:3003/reproduction/progress/user/${id_usuario}/content/${id_contenido}`
+          );
+
+          if (res.data?.has_progress) {
+            setProgress(res.data.segundo_actual);
+          }
+
+        } catch (err) {
+          console.log("Sin progreso previo");
+        }
+
       } catch (error) {
-        console.error("Error cargando contenido:", error);
+        console.error("Error:", error);
       } finally {
-        loading && setLoading(false);
+        setLoading(false);
       }
     };
 
-    fetchContent();
+    fetchData();
+
   }, [contentId]);
 
-  // 🛠️ Función para convertir URLs estándar de YT en URLs embebibles válidas
-  const getYouTubeEmbedUrl = (url) => {
-    if (!url) return "https://www.youtube.com/embed/dQw4w9WgXcQ"; // fallback (Rickroll) si está vacío
-    
-    // Si ya guardaste solo el ID de 11 caracteres (ej: "dQw4w9WgXcQ")
-    if (url.length === 11) return `https://www.youtube.com/embed/${url}`;
+  // =========================
+  // EXTRAER ID YOUTUBE
+  // =========================
+  const extractVideoId = (url) => {
+    if (!url) return "dQw4w9WgXcQ";
+    if (url.length === 11) return url;
 
-    // Si guardaste la URL completa, extraemos el ID usando expresiones regulares
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|watch\?v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
-    
-    return (match && match[2].length === 12 || match[2].length === 11) 
-      ? `https://www.youtube.com/embed/${match[2]}`
-      : url;
+
+    return match && match[2].length === 11 ? match[2] : "dQw4w9WgXcQ";
   };
 
+  // =========================
+  // CARGAR YOUTUBE (SIN BUCLE)
+  // =========================
+  useEffect(() => {
+    if (!content) return;
+
+    const createPlayer = () => {
+      const videoId = extractVideoId(content.trailer_url);
+
+      const newPlayer = new window.YT.Player("youtube-player", {
+        height: "100%",
+        width: "100%",
+        videoId,
+        playerVars: {
+          autoplay: 1,
+          start: Math.floor(progress)
+        },
+        events: {
+          onReady: (e) => e.target.playVideo(),
+          onStateChange: handleStateChange
+        }
+      });
+
+      setPlayer(newPlayer);
+    };
+
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.body.appendChild(tag);
+      window.onYouTubeIframeAPIReady = createPlayer;
+    } else {
+      createPlayer();
+    }
+
+  }, [content]); 
+  // =========================
+  // ⏱GUARDAR CADA 10s (PUERTO 3003)
+  // =========================
+  useEffect(() => {
+    if (!player || !content) return;
+
+    const id_contenido = parseInt(contentId);
+
+    const interval = setInterval(() => {
+      try {
+        const currentTime = Math.floor(player.getCurrentTime());
+
+        axios.post('http://localhost:3003/reproduction/progress', {
+          id_usuario,
+          id_contenido,
+          segundo_actual: currentTime,
+          visto_completado: false
+        });
+
+      } catch (err) {
+        console.warn("Player no listo");
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+
+  }, [player]);
+
+  // =========================
+  // FIN DEL VIDEO 
+  // =========================
+  const handleStateChange = (event) => {
+    const id_contenido = parseInt(contentId);
+
+    if (event.data === window.YT.PlayerState.ENDED) {
+      axios.post('http://localhost:3003/reproduction/progress', {
+        id_usuario,
+        id_contenido,
+        segundo_actual: 0,
+        visto_completado: true
+      });
+    }
+  };
+
+  // =========================
+  // RENDER
+  // =========================
   if (loading) {
-    return (
-      <div className={`watch-loading ${darkMode ? 'dark-mode' : ''}`}>
-        <div className="loader-text">CARGANDO REPRODUCTOR...</div>
-      </div>
-    );
+    return <div className="watch-loading">Cargando...</div>;
   }
 
   if (!content) {
     return (
-      <div className={`watch-container ${darkMode ? 'dark-mode' : ''}`}>
-        <div className="watch-error">
-          <h2>Contenido no encontrado</h2>
-          <button onClick={() => navigate('/catalog')} className="btn-back">
-            <IconArrowLeft /> Volver al catálogo
-          </button>
-        </div>
+      <div>
+        <h2>No encontrado</h2>
+        <button onClick={() => navigate('/catalog')}>
+          Volver
+        </button>
       </div>
     );
   }
 
   return (
-    <div className={`watch-container ${darkMode ? 'dark-mode' : ''}`}>
+    <div className="watch-container">
+
       <div className="watch-header">
-        <button type="button" onClick={() => navigate('/catalog')} className="btn-back" title="Volver al catálogo">
-          <IconArrowLeft />
-        </button>
-        <button type="button" onClick={() => navigate('/catalog')} className="btn-home" title="Ir a catálogo">
-          <IconHome />
+        <button onClick={() => navigate('/catalog')}>
+          ← Volver
         </button>
       </div>
 
       <div className="watch-content">
+
+        {/* PLAYER */}
         <div className="video-player">
-          <div className="video-placeholder">
-            {/* 🚀 URL AHORA ES DINÁMICA BASADA EN TU BACKEND */}
-            <iframe
-              width="100%"
-              height="100%"
-              src={getYouTubeEmbedUrl(content.trailer_url)}
-              title={content.titulo || content.name}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ borderRadius: '12px' }}
-            ></iframe>
-          </div>
+          <div
+            id="youtube-player"
+            style={{ width: "100%", height: "500px", borderRadius: "12px" }}
+          ></div>
         </div>
 
-        {/* Content Info */}
+        {/* INFO */}
         <div className="video-info">
-          <div className="info-header">
-            <h1 className="content-title">{content.titulo || content.name}</h1>
-            <span className="content-badge">{content.tipo || 'Película'}</span>
-          </div>
+          <h1>{content.titulo || content.name}</h1>
 
-          <div className="info-details">
-            {(content.descripcion || content.sinopsis) && (
-              <p className="description">{content.descripcion || content.sinopsis}</p>
-            )}
-            {content.calificacion && (
-              <div className="rating">
-                <span className="star">⭐</span>
-                <span className="rating-value">{content.calificacion}</span>
-              </div>
-            )}
-            {content.duracion && (
-              <p className="duration">
-                ⏱️ Duración: {content.duracion}
-              </p>
-            )}
-            {content.anio && (
-              <p className="year">
-                📅 Año: {content.anio}
-              </p>
-            )}
-            {content.director && (
-              <p className="director">
-                🎬 Director: {content.director}
-              </p>
-            )}
-            {content.actores && (
-              <p className="actors">
-                👥 Actores: {content.actores}
-              </p>
-            )}
-          </div>
+          {(content.descripcion || content.sinopsis) && (
+            <p>{content.descripcion || content.sinopsis}</p>
+          )}
 
-          <div className="action-buttons">
-            <button 
-              type="button"
-              onClick={() => navigate('/catalog')}
-              className="btn-back-full"
-            >
-              ← Volver al catálogo
-            </button>
-            <button 
-              type="button"
-              onClick={() => navigate('/mylist')}
-              className="btn-mylist"
-            >
-              🍿 Mi Lista
-            </button>
-          </div>
+          {content.calificacion && <p>⭐ {content.calificacion}</p>}
+          {content.duracion && <p>⏱️ {content.duracion}</p>}
+          {content.anio && <p>📅 {content.anio}</p>}
+          {content.director && <p>🎬 {content.director}</p>}
+          {content.actores && <p>👥 {content.actores}</p>}
         </div>
+
       </div>
     </div>
   );

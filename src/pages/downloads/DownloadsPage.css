@@ -1,0 +1,174 @@
+.downloads-container {
+  min-height: 100vh;
+  background-color: #0b151a;
+  color: #FAFBFD;
+  padding: 40px 60px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.downloads-header {
+  margin-bottom: 40px;
+  border-bottom: 1px solid #233c4d;
+  padding-bottom: 20px;
+}
+
+.downloads-header h1 {
+  font-size: 32px;
+  color: #8AD5DF;
+  margin: 15px 0 5px 0;
+}
+
+.downloads-header p {
+  color: #8a9ea7;
+  margin: 0;
+}
+
+.back-btn {
+  background: #1a2f3c;
+  border: 1px solid #3a5a6f;
+  color: #FAFBFD;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #E182CB;
+  color: #000;
+  border-color: #E182CB;
+}
+
+.downloads-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Contenedor del Reproductor de Video */
+.offline-player-wrapper {
+  background: #000;
+  border: 2px solid #E182CB;
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+}
+
+.offline-player-wrapper h3 {
+  margin: 0 0 12px 0;
+  color: #25D366;
+  font-size: 14px;
+}
+
+.native-video-player {
+  width: 100%;
+  max-height: 450px;
+  border-radius: 8px;
+}
+
+/* Lista de Tarjetas */
+.downloads-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.downloads-empty {
+  text-align: center;
+  padding: 60px;
+  background: #12222d;
+  border-radius: 12px;
+  border: 2px dashed #233c4d;
+}
+
+.downloads-empty p {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  color: #8a9ea7;
+}
+
+.download-card {
+  display: flex;
+  align-items: center;
+  background: #162633;
+  border: 1px solid #233c4d;
+  padding: 16px;
+  border-radius: 12px;
+  gap: 20px;
+  transition: transform 0.2s;
+}
+
+.download-card:hover {
+  transform: translateX(5px);
+  border-color: #3a5a6f;
+}
+
+.download-poster {
+  width: 65px;
+  height: 95px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.download-info {
+  flex: 1;
+}
+
+.download-info h3 {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+}
+
+.download-tag {
+  background: rgba(138, 213, 223, 0.1);
+  color: #8AD5DF;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.download-date {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #8a9ea7;
+}
+
+.download-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.play-offline-btn {
+  background: #25D366;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.play-offline-btn:hover {
+  background: #21b858;
+}
+
+.delete-offline-btn {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.delete-offline-btn:hover {
+  background: #ff6b6b;
+  color: #fff;
+}
