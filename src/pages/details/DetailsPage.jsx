@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   getContentById,
   getContentId,
-  getRecommendationsByContent
+  getRecommendationsByContent,
+  getTypeLabel
 } from '../../services/contentService';
 import './DetailsPage.css';
 
@@ -21,10 +22,11 @@ const DetailsPage = () => {
       setContent(detail);
 
       if (detail) {
-        const sameGenre = await getRecommendationsByContent(getContentId(detail), detail.genero || detail.genre);
-        const currentGenre = String(detail.genero || detail.genre || '').toLowerCase();
+        const currentGenres = (detail.generos?.length ? detail.generos : [detail.genero || detail.genre])
+          .map((genre) => String(genre).toLowerCase());
+        const sameGenre = await getRecommendationsByContent(getContentId(detail), detail.generos?.[0] || detail.genero || detail.genre);
         setRecommendations(
-          sameGenre.filter((item) => String(item.genero || item.genre || '').toLowerCase() === currentGenre)
+          sameGenre.filter((item) => item.generos?.some((genre) => currentGenres.includes(String(genre).toLowerCase())))
         );
       } else {
         setRecommendations([]);
@@ -56,6 +58,7 @@ const DetailsPage = () => {
   }
 
   const title = content.titulo || content.name;
+  const genres = content.generos?.length ? content.generos : [content.genero || content.genre].filter(Boolean);
   const cast = Array.isArray(content.reparto || content.cast)
     ? (content.reparto || content.cast)
     : String(content.actores || '').split(',').map((item) => item.trim()).filter(Boolean);
@@ -76,7 +79,7 @@ const DetailsPage = () => {
         </div>
 
         <div className="details-main">
-          <span className="details-type">{content.tipo || 'Pelicula'} · {content.genero || content.genre}</span>
+          <span className="details-type">{getTypeLabel(content.tipo)} · {genres.join(', ')}</span>
           <h1>{title}</h1>
           <p className="details-synopsis">{content.sinopsis || content.descripcion}</p>
 

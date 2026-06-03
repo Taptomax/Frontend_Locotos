@@ -15,6 +15,7 @@ import SettingsPage from "./pages/catalog/SettingsPage";
 import DetailsPage from './pages/details/DetailsPage';
 import WatchPage from './pages/watch/WatchPage';
 import AdminContentPage from './pages/admin/AdminContentPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 
 // ─── COMPONENTES DE PRUEBA MIAURI ───────────────────────────────────────────
 function VideoPlayerMiauri() {
@@ -123,6 +124,7 @@ function App() {
           {/* Modulo independiente de administracion de contenido y estadisticas */}
           <Route path="/admin" element={<Navigate to="/admin/content" replace />} />
           <Route path="/admin/content" element={<AdminContentPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
 
           {/* Captura cualquier link roto y lo manda al login */}
           <Route path="*" element={<Navigate to="/login" replace />} />

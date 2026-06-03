@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getCatalog, getContentId, getLegacyNumericContentId, getTypeLabel } from '../../services/contentService';
 import './CatalogPage.css';
 
 const IconSun  = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
@@ -12,15 +13,6 @@ const IconHeartEmpty = () => <svg className="w-5 h-5" fill="none" stroke="curren
 const IconHeartFull  = () => <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" style={{ color: '#E182CB' }}><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3c1.749 0 3.3 1.01 4.142 2.525C12.675 4.01 14.225 3 15.97 3 18.944 3 21.41 5.322 21.41 8.25c0 3.924-2.438 7.11-4.73 9.28a25.117 25.117 0 01-4.245 3.17 15.181 15.181 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" /></svg>;
 const IconClock      = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2" /></svg>;
 const IconPlay       = () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>;
-
-const getMovieId = (title) => {
-  if (!title) return 0;
-  let hash = 0;
-  for (let i = 0; i < title.length; i++) {
-    hash = title.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash);
-};
 
 const CatalogPage = () => {
   const [products, setProducts] = useState([]);
@@ -44,8 +36,8 @@ const CatalogPage = () => {
 
     const fetchInitialData = async () => {
       try {
-        const catalogRes = await axios.get('http://localhost:3006/api/catalog');
-        setProducts(catalogRes.data);
+        const catalogData = await getCatalog();
+        setProducts(catalogData);
 
         if (storedUser?.id_usuario) {
           const userIdNum = Number(storedUser.id_usuario);
@@ -194,14 +186,14 @@ const CatalogPage = () => {
                     <p className="dropdown-empty">No tienes películas en tu lista.</p>
                   ) : (
                     watchLaterIds.map((idWatchLater) => {
-                      const movieData = products.find(p => getMovieId(p.titulo || p.name) === idWatchLater);
+                      const movieData = products.find(p => getLegacyNumericContentId(p) === idWatchLater);
                       if (!movieData) return null;
                       return (
                         <div key={idWatchLater} className="dropdown-media-item">
                           <img src={movieData.poster || movieData.imagen_url} alt="" className="dropdown-thumb" />
                           <div className="dropdown-media-info">
                             <span className="dropdown-media-title">{movieData.titulo || movieData.name}</span>
-                            <span className="dropdown-media-type" style={{ color: '#8AD5DF' }}>{movieData.tipo || 'Película'}</span>
+                            <span className="dropdown-media-type" style={{ color: '#8AD5DF' }}>{getTypeLabel(movieData.tipo)}</span>
                           </div>
                           <button type="button" onClick={() => handleToggleWatchLater(idWatchLater)} className="dropdown-remove-btn" title="Quitar">✕</button>
                         </div>
@@ -265,14 +257,14 @@ const CatalogPage = () => {
                     <p className="dropdown-empty">No tienes películas guardadas aún.</p>
                   ) : (
                     favContentIds.map((idFavorito) => {
-                      const movieData = products.find(p => getMovieId(p.titulo || p.name) === idFavorito);
+                      const movieData = products.find(p => getLegacyNumericContentId(p) === idFavorito);
                       if (!movieData) return null;
                       return (
                         <div key={idFavorito} className="dropdown-media-item">
                           <img src={movieData.poster || movieData.imagen_url} alt="" className="dropdown-thumb" />
                           <div className="dropdown-media-info">
                             <span className="dropdown-media-title">{movieData.titulo || movieData.name}</span>
-                            <span className="dropdown-media-type" style={{ color: '#E182CB' }}>{movieData.tipo || 'Película'}</span>
+                            <span className="dropdown-media-type" style={{ color: '#E182CB' }}>{getTypeLabel(movieData.tipo)}</span>
                           </div>
                           <button type="button" onClick={() => handleToggleFavorite(idFavorito)} className="dropdown-remove-btn" title="Quitar de favoritos">✕</button>
                         </div>
@@ -295,10 +287,11 @@ const CatalogPage = () => {
       {/* CONTENIDO PRINCIPAL */}
       <main className="catalog-grid">
         {products.map((c, index) => {
-          const contentId = getMovieId(c.titulo || c.name);
-          const isFav = favContentIds.includes(Number(contentId));
-          const isWatchLater = watchLaterIds.includes(Number(contentId));
-          const shareUrl = `${window.location.origin}/catalog?watch=${contentId}`;
+          const contentId = getContentId(c);
+          const legacyContentId = getLegacyNumericContentId(c);
+          const isFav = favContentIds.includes(Number(legacyContentId));
+          const isWatchLater = watchLaterIds.includes(Number(legacyContentId));
+          const shareUrl = `${window.location.origin}/details/${contentId}`;
           const shareText = `¡Te recomiendo ver "${c.titulo || c.name}" en LOCOTOS Streaming! Míralo aquí: ${shareUrl}`;
 
           return (
@@ -307,7 +300,7 @@ const CatalogPage = () => {
               {/* BOTÓN FAVORITOS */}
               <button
                 type="button"
-                onClick={() => handleToggleFavorite(contentId)}
+                onClick={() => handleToggleFavorite(legacyContentId)}
                 style={{
                   position: 'absolute', top: '12px', left: '12px', zIndex: 10,
                   background: 'rgba(31, 58, 74, 0.75)', border: 'none', borderRadius: '50%',
@@ -373,7 +366,7 @@ const CatalogPage = () => {
               {/* BOTÓN VER MÁS TARDE */}
               <button
                 type="button"
-                onClick={() => handleToggleWatchLater(contentId)}
+                onClick={() => handleToggleWatchLater(legacyContentId)}
                 style={{
                   position: 'absolute', bottom: '12px', left: '12px', zIndex: 10,
                   background: isWatchLater ? 'rgba(138, 213, 223, 0.9)' : 'rgba(31, 58, 74, 0.75)',
@@ -418,7 +411,7 @@ const CatalogPage = () => {
 
               {/* INFO TARJETA */}
               <div className="card-info">
-                <span className="content-type">{c.tipo || 'Película'}</span>
+                <span className="content-type">{getTypeLabel(c.tipo)}</span>
                 <h3 className="content-title">{c.titulo || c.name}</h3>
               </div>
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { getContentById, registerPlayback } from '../../services/contentService';
+import { getContentById, getContentId, registerPlayback } from '../../services/contentService';
 import './WatchPage.css';
 
 const IconArrowLeft = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>;
@@ -20,24 +19,13 @@ const WatchPage = () => {
 
     const fetchContent = async () => {
       try {
-        // Traemos el catálogo completo
-        const catalogRes = await axios.get('http://localhost:3006/api/catalog');
-        
-        // Buscamos coincidencia calculando el hash del título (manteniendo tu lógica actual)
-        const found = catalogRes.data.find(c => {
-          let hash = 0;
-          const title = c.titulo || c.name || '';
-          for (let i = 0; i < title.length; i++) {
-            hash = title.charCodeAt(i) + ((hash << 5) - hash);
-          }
-          return Math.abs(hash) === parseInt(contentId);
-        });
-        
+        const found = await getContentById(contentId);
         setContent(found || null);
+        if (found) registerPlayback(getContentId(found));
       } catch (error) {
         console.error("Error cargando contenido:", error);
       } finally {
-        loading && setLoading(false);
+        setLoading(false);
       }
     };
 
@@ -55,7 +43,7 @@ const WatchPage = () => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     
-    return (match && match[2].length === 12 || match[2].length === 11) 
+    return (match && (match[2].length === 12 || match[2].length === 11))
       ? `https://www.youtube.com/embed/${match[2]}`
       : url;
   };
