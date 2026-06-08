@@ -6,6 +6,7 @@ import {
   getRecommendationsByContent,
   getTypeLabel
 } from '../../services/contentService';
+import { getPosterSrc, handlePosterError } from '../../utils/poster';
 import './DetailsPage.css';
 
 const DetailsPage = () => {
@@ -72,9 +73,10 @@ const DetailsPage = () => {
       <section className="details-hero">
         <div className="details-poster-wrap">
           <img
-            src={content.poster || content.imagen_url || 'https://via.placeholder.com/420x620'}
+            src={getPosterSrc(content)}
             alt={title}
             className="details-poster"
+            onError={handlePosterError}
           />
         </div>
 
@@ -123,6 +125,7 @@ const DetailsPage = () => {
             title={`Trailer de ${title}`}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            referrerPolicy="no-referrer"
           />
         </div>
       </section>
@@ -140,7 +143,11 @@ const DetailsPage = () => {
                 className="details-recommendation"
                 onClick={() => navigate(`/details/${getContentId(item)}`)}
               >
-                <img src={item.poster || item.imagen_url || 'https://via.placeholder.com/220x320'} alt={item.titulo || item.name} />
+                <img
+                  src={getPosterSrc(item)}
+                  alt={item.titulo || item.name}
+                  onError={handlePosterError}
+                />
                 <span>{item.titulo || item.name}</span>
               </button>
             ))}

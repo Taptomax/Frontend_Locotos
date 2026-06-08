@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { getCatalog, getContentId, getLegacyNumericContentId, getTypeLabel } from '../../services/contentService';
+import { getCatalog, getContentId, getLegacyNumericContentId, getProgressContentId, getTypeLabel } from '../../services/contentService';
+import { getPosterSrc, handlePosterError } from '../../utils/poster';
 import './CatalogPage.css';
 
 const IconSun  = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
@@ -14,6 +15,15 @@ const IconHeartFull  = () => <svg className="w-5 h-5" fill="currentColor" viewBo
 const IconClock      = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2" /></svg>;
 const IconPlay       = () => <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>;
 
+const getMovieId = (title) => {
+  if (!title) return 0;
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) {
+    hash = title.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash);
+};
+
 const CatalogPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +35,10 @@ const CatalogPage = () => {
   const [activeShareId, setActiveShareId] = useState(null);
   const [watchLaterIds, setWatchLaterIds] = useState([]);
   const [showWatchLaterDropdown, setShowWatchLaterDropdown] = useState(false);
+  const [continueWatching, setContinueWatching] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTipo, setFilterTipo] = useState('todos');
+  const [filterGenero, setFilterGenero] = useState('todos');
 
   const navigate = useNavigate();
   const dm = darkMode;
@@ -41,12 +55,39 @@ const CatalogPage = () => {
 
         if (storedUser?.id_usuario) {
           const userIdNum = Number(storedUser.id_usuario);
+
+       
           const favsRes = await axios.get(`http://localhost:3010/favorites/user/${userIdNum}`);
           const favIds = (favsRes.data.favoritos || []).map(f => Number(f.id_contenido));
           setFavContentIds(favIds);
+
           const watchLaterRes = await axios.get(`http://localhost:3011/watch-later/${userIdNum}`);
           const watchIds = (Array.isArray(watchLaterRes.data) ? watchLaterRes.data : []).map(item => Number(item.id_contenido));
           setWatchLaterIds(watchIds);
+
+       
+          const progressPromises = catalogData.map(async (movie) => {
+            const progressId = getProgressContentId(movie);
+            try {
+              const res = await axios.get(`http://localhost:3003/reproduction/progress/user/${userIdNum}/content/${progressId}`);
+
+              if (res.data?.has_progress && !res.data.visto_completado && res.data.segundo_actual > 0) {
+                return {
+                  ...movie,
+                  progress_id: progressId,
+                  watch_id: getContentId(movie),
+                  segundo_actual: res.data.segundo_actual
+                };
+              }
+            } catch (err) {
+              // sin progreso para este título
+            }
+            return null;
+          });
+
+          const progressResults = await Promise.all(progressPromises);
+          
+          setContinueWatching(progressResults.filter(item => item !== null));
         }
       } catch (error) {
         console.error("Error cargando componentes del ecosistema:", error);
@@ -74,6 +115,74 @@ const CatalogPage = () => {
       console.error("Error operando sobre la lista en MongoDB:", error);
     }
   };
+
+
+  const handleDownload = async (param1, param2) => {
+    const movieObject = typeof param2 === 'object' ? param2 : (typeof param1 === 'object' ? param1 : null);
+    const idRealContenido = movieObject
+      ? getContentId(movieObject)
+      : String(param1 ?? param2 ?? '').trim();
+
+    if (!idRealContenido) return alert("No se pudo identificar el contenido a descargar.");
+    const currentUserId = storedUser?.id_usuario || 3;
+    const tokenDeSesion = localStorage.getItem('token');
+
+    if (!tokenDeSesion) return alert("Error: Inicia sesión nuevamente.");
+
+    try {
+      alert("Solicitando autorización de descarga... ⏳");
+
+      const authRes = await axios.post(
+        'http://localhost:3010/downloads',
+        { id_usuario: Number(currentUserId), id_contenido: String(idRealContenido), dispositivo: "Web Browser" },
+        { headers: { Authorization: `Bearer ${tokenDeSesion}` } }
+      );
+
+      if (authRes.data && (authRes.data.url || authRes.data.url_video_offline)) {
+        const urlVideoDinamica = authRes.data.url || authRes.data.url_video_offline;
+
+        alert("¡Autorizado! Guardando flujo multimedia de forma segura en el almacenamiento local... 📥");
+
+
+        const responseVideo = await fetch(urlVideoDinamica);
+        if (!responseVideo.ok) throw new Error("Fallo al transferir bytes del servidor.");
+
+
+        const blobVideo = await responseVideo.blob();
+        if (blobVideo.size === 0) {
+          throw new Error("El servidor no devolvió bytes de video válidos.");
+        }
+
+        const cacheContenidos = await caches.open('locotos_media_cache');
+        const urlVirtualInterna = `/video-offline-seguro/${idRealContenido}.mp4`;
+        await cacheContenidos.put(urlVirtualInterna, new Response(blobVideo, {
+          headers: { 'Content-Type': blobVideo.type || 'video/mp4' }
+        }));
+
+
+        const existingDownloads = JSON.parse(localStorage.getItem('locotos_downloads') || '[]');
+
+        const newItem = {
+          id_contenido: idRealContenido,
+          titulo: movieObject?.titulo || movieObject?.name || `Película_${idRealContenido}`,
+          poster: movieObject?.poster || movieObject?.imagen_url || "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500",
+          localUrl: urlVirtualInterna,
+          fecha: new Date().toISOString()
+        };
+
+        const updatedDownloads = [...existingDownloads.filter(i => i.id_contenido !== idRealContenido), newItem];
+        localStorage.setItem('locotos_downloads', JSON.stringify(updatedDownloads));
+
+        alert(`¡"${movieObject?.titulo || movieObject?.name || 'Película'}" guardada offline con éxito y de forma segura! 🎉`);
+      } else {
+        alert("No se recibió una URL válida del servidor.");
+      }
+    } catch (error) {
+      console.error("Error en la descarga:", error);
+      alert("Error al procesar la descarga segura.");
+    }
+  };
+
 
   const handleToggleWatchLater = async (idContenido) => {
     if (!storedUser?.id_usuario) return alert("Inicia sesión para usar Ver Más Tarde.");
@@ -123,6 +232,51 @@ const CatalogPage = () => {
     setShowProfileMenu(false);
     setShowNotifications(false);
     setShowWatchLaterDropdown(false);
+  };
+
+  const genreOptions = useMemo(() => {
+    const genres = new Set();
+    products.forEach((item) => {
+      (item.generos || []).forEach((g) => genres.add(String(g).trim()));
+      if (item.genero) genres.add(String(item.genero).trim());
+    });
+    return [...genres].filter(Boolean).sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return products.filter((item) => {
+      const tipo = String(item.tipo || '').toLowerCase();
+      const generos = [
+        ...(item.generos || []),
+        item.genero,
+        item.genre
+      ].map((g) => String(g || '').toLowerCase()).filter(Boolean);
+
+      if (filterTipo !== 'todos' && tipo !== filterTipo) return false;
+      if (filterGenero !== 'todos' && !generos.includes(filterGenero.toLowerCase())) return false;
+
+      if (!query) return true;
+
+      const haystack = [
+        item.titulo,
+        item.name,
+        item.descripcion,
+        item.sinopsis,
+        item.director,
+        ...generos
+      ].join(' ').toLowerCase();
+
+      return haystack.includes(query);
+    });
+  }, [products, searchQuery, filterTipo, filterGenero]);
+
+  const hasActiveFilters = searchQuery.trim() || filterTipo !== 'todos' || filterGenero !== 'todos';
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setFilterTipo('todos');
+    setFilterGenero('todos');
   };
 
   if (loading) return (
@@ -190,7 +344,7 @@ const CatalogPage = () => {
                       if (!movieData) return null;
                       return (
                         <div key={idWatchLater} className="dropdown-media-item">
-                          <img src={movieData.poster || movieData.imagen_url} alt="" className="dropdown-thumb" />
+                          <img src={getPosterSrc(movieData)} alt="" className="dropdown-thumb" onError={handlePosterError} />
                           <div className="dropdown-media-info">
                             <span className="dropdown-media-title">{movieData.titulo || movieData.name}</span>
                             <span className="dropdown-media-type" style={{ color: '#8AD5DF' }}>{getTypeLabel(movieData.tipo)}</span>
@@ -261,7 +415,7 @@ const CatalogPage = () => {
                       if (!movieData) return null;
                       return (
                         <div key={idFavorito} className="dropdown-media-item">
-                          <img src={movieData.poster || movieData.imagen_url} alt="" className="dropdown-thumb" />
+                          <img src={getPosterSrc(movieData)} alt="" className="dropdown-thumb" onError={handlePosterError} />
                           <div className="dropdown-media-info">
                             <span className="dropdown-media-title">{movieData.titulo || movieData.name}</span>
                             <span className="dropdown-media-type" style={{ color: '#E182CB' }}>{getTypeLabel(movieData.tipo)}</span>
@@ -272,7 +426,10 @@ const CatalogPage = () => {
                     })
                   )}
                 </div>
-                <div className="dropdown-footer">
+                  <div className="dropdown-footer" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <button type="button" onClick={() => navigate('/downloads')} className="dropdown-footer-btn" style={{ textAlign: 'left', width: '100%' }}>
+                  📥 Mis Descargas
+                  </button>
                   <button type="button" onClick={() => navigate('/settings')} className="dropdown-footer-btn">
                     ⚙️ Configuración
                   </button>
@@ -284,9 +441,116 @@ const CatalogPage = () => {
         </div>
       </nav>
 
+      <section className="catalog-toolbar" onClick={(e) => e.stopPropagation()}>
+        <div className="catalog-search-wrap">
+          <span className="catalog-search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="search"
+            className="catalog-search-input"
+            placeholder="Buscar por título, género, director..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="catalog-filters">
+          <label className="catalog-filter-field">
+            <span>Tipo</span>
+            <select value={filterTipo} onChange={(e) => setFilterTipo(e.target.value)}>
+              <option value="todos">Todos</option>
+              <option value="pelicula">Películas</option>
+              <option value="serie">Series</option>
+            </select>
+          </label>
+
+          <label className="catalog-filter-field">
+            <span>Género</span>
+            <select value={filterGenero} onChange={(e) => setFilterGenero(e.target.value)}>
+              <option value="todos">Todos</option>
+              {genreOptions.map((genre) => (
+                <option key={genre} value={genre.toLowerCase()}>{genre}</option>
+              ))}
+            </select>
+          </label>
+
+          {hasActiveFilters && (
+            <button type="button" className="catalog-filter-clear" onClick={clearFilters}>
+              Limpiar filtros
+            </button>
+          )}
+        </div>
+
+        <p className="catalog-results-count">
+          {filteredProducts.length} de {products.length} títulos
+        </p>
+      </section>
+
+      {/* ⏱️ NUEVA FILA HORIZONTAL: CONTINUAR VIENDO (ESTILO NETFLIX) */}
+      {continueWatching.length > 0 && (
+        <section className="continue-watching-section" style={{ padding: '0 60px', marginBottom: '40px' }}>
+          <h2 style={{ fontSize: '24px', color: '#E182CB', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            ⏱️ Continuar viendo para {storedUser?.nombre || 'usuario'}
+          </h2>
+          <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '15px' }}>
+            {continueWatching.map((movie) => {
+              const progressPercent = movie.duracion_segundos
+                ? Math.min(100, (movie.segundo_actual / movie.duracion_segundos) * 100)
+                : 35;
+              return (
+              <div key={`continue-${movie.watch_id || getContentId(movie)}`} className="content-card continue-card" style={{ 
+                flex: '0 0 220px', position: 'relative', background: '#162633', borderRadius: '12px', overflow: 'hidden' 
+              }}>
+                <div className="poster-container" style={{ height: '140px', overflow: 'hidden', position: 'relative' }}>
+                  <img src={getPosterSrc(movie)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={handlePosterError} />
+                  
+                  {/* Botón rápido de play que reanuda directamente */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/watch/${movie.watch_id || getContentId(movie)}`)}
+                    style={{
+                      position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                      background: 'rgba(138, 213, 223, 0.9)', border: 'none', borderRadius: '50%',
+                      width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                    }}
+                    title="Reanudar reproducción"
+                  >
+                    <IconPlay style={{ color: '#1f3a4a' }} />
+                  </button>
+                </div>
+
+                {/* Barra de progreso simulada abajo del poster */}
+                <div style={{ background: '#3a5a6f', height: '4px', width: '100%', position: 'relative' }}>
+                  <div style={{ 
+                    background: '#E182CB', 
+                    height: '100%', 
+                    width: `${progressPercent}%`
+                  }} />
+                </div>
+
+                <div style={{ padding: '10px' }}>
+                  <h4 style={{ margin: '0 0 4px 0', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {movie.titulo || movie.name}
+                  </h4>
+                  <span style={{ fontSize: '11px', color: '#8AD5DF' }}>En el seg: {Math.floor(movie.segundo_actual)}s</span>
+                </div>
+              </div>
+            );
+            })}
+          </div>
+        </section>
+      )}
+
+
       {/* CONTENIDO PRINCIPAL */}
       <main className="catalog-grid">
-        {products.map((c, index) => {
+        {filteredProducts.length === 0 ? (
+          <div className="catalog-empty-state">
+            <p>No encontramos títulos con esos filtros.</p>
+            <button type="button" className="theme-toggle-btn" onClick={clearFilters}>
+              Ver todo el catálogo
+            </button>
+          </div>
+        ) : filteredProducts.map((c, index) => {
           const contentId = getContentId(c);
           const legacyContentId = getLegacyNumericContentId(c);
           const isFav = favContentIds.includes(Number(legacyContentId));
@@ -381,12 +645,43 @@ const CatalogPage = () => {
                 <IconClock />
               </button>
 
+              {/* 📥 NUEVO BOTÓN FLOTANTE DESCARGA (DEBAJO DE COMPARTIR) */}
+              <button
+                type="button"
+                onClick={() => handleDownload(contentId, c)}
+                style={{
+                  position: 'absolute', 
+                  top: '92px',
+                  right: '12px', 
+                  zIndex: 10,
+                  background: 'rgba(31, 58, 74, 0.75)', 
+                  border: 'none', 
+                  borderRadius: '50%',
+                  width: '36px', 
+                  height: '36px', 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  justifyContent: 'center', 
+                  cursor: 'pointer', 
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)', 
+                  color: '#8AD5DF'
+                }}
+                title="Descargar para ver offline"
+              >
+                {/* Icono de descarga nativo SVG */}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12l-4.5 4.5m0 0l-4.5-4.5m4.5 4.5V3" />
+                </svg>
+              </button>
+
               {/* POSTER */}
               <div className="poster-container">
                 <img
-                  src={c.imagen_url || c.poster || 'https://placeholder.com'}
-                  alt={c.titulo}
+                  src={getPosterSrc(c)}
+                  alt={c.titulo || c.name || 'Póster'}
                   className="poster-img"
+                  onError={handlePosterError}
                 />
                 <div className="card-overlay">
                   <span className="calificacion-badge">⭐ {c.calificacion || '8.0'}</span>

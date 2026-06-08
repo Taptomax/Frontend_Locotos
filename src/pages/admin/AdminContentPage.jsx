@@ -7,6 +7,8 @@ import {
   getTypeLabel,
   updateContent
 } from '../../services/contentService';
+import { useLocotosTheme } from '../../hooks/useLocotosTheme';
+import '../catalog/CatalogPage.css';
 import './AdminContentPage.css';
 
 const currentYear = new Date().getFullYear();
@@ -84,7 +86,7 @@ const validateForm = (form) => {
   if (title.length < 2) errors.titulo = 'Ingresa al menos 2 caracteres.';
   if (title.length > 120) errors.titulo = 'Maximo 120 caracteres.';
   if (!['pelicula', 'serie'].includes(form.tipo)) errors.tipo = 'Selecciona un tipo valido.';
-  if (!Number.isInteger(year) || year < 1895 || year > currentYear + 5) errors.anio = `Usa un anio entre 1895 y ${currentYear + 5}.`;
+  if (!Number.isInteger(year) || year < 1895 || year > currentYear + 5) errors.anio = `Usa un año entre 1895 y ${currentYear + 5}.`;
   if (genres.length === 0) errors.generos = 'Ingresa al menos un genero.';
   if (genres.length > 6) errors.generos = 'Usa maximo 6 generos.';
   if (!classificationOptions.includes(form.clasificacion)) errors.clasificacion = 'Selecciona una clasificacion valida.';
@@ -112,6 +114,7 @@ const validateForm = (form) => {
 const FieldError = ({ message }) => (message ? <span className="admin-field-error">{message}</span> : null);
 
 const AdminContentPage = () => {
+  const { darkMode, toggleTheme, wrapperClass } = useLocotosTheme(true);
   const [contents, setContents] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -265,13 +268,16 @@ const AdminContentPage = () => {
   };
 
   return (
-    <main className="admin-shell">
+    <main className={`${wrapperClass} admin-shell`}>
       <header className="admin-header">
         <div>
           <p className="admin-kicker">MongoDB Content Admin</p>
           <h1>CRUD de peliculas y series</h1>
         </div>
         <nav className="admin-nav" aria-label="Administracion">
+          <button type="button" className="theme-toggle-btn" onClick={toggleTheme}>
+            {darkMode ? '☀️ Claro' : '🌙 Oscuro'}
+          </button>
           <a href="/admin/dashboard" className="admin-link">Dashboard</a>
           <a href="/catalog" className="admin-link">Catalogo</a>
         </nav>
@@ -306,7 +312,7 @@ const AdminContentPage = () => {
       <section className="admin-layout">
         <form className="admin-form" onSubmit={handleSubmit} noValidate>
           <div className="admin-section-title">
-            <h2>{editingId ? 'Editar documento' : 'Nuevo documento'}</h2>
+            <h2>{editingId ? 'Editar película' : 'Nueva película'}</h2>
             {editingId && (
               <button type="button" onClick={handleReset}>
                 Cancelar
@@ -346,7 +352,7 @@ const AdminContentPage = () => {
 
           <div className="admin-two-cols">
             <label>
-              Anio
+              Año
               <input name="anio" type="number" min="1895" max={currentYear + 5} value={form.anio} onChange={handleChange} onBlur={handleBlur} />
               {showErrorFor('anio') && <FieldError message={formErrors.anio} />}
             </label>
@@ -440,7 +446,7 @@ const AdminContentPage = () => {
                   <th>Titulo</th>
                   <th>Tipo</th>
                   <th>Generos</th>
-                  <th>Anio</th>
+                  <th>Año</th>
                   <th>Rating</th>
                   <th>Acciones</th>
                 </tr>

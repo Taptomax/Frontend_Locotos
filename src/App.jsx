@@ -17,13 +17,14 @@ import WatchPage from './pages/watch/WatchPage';
 import AdminContentPage from './pages/admin/AdminContentPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 
+import DownloadsPage from './pages/downloads/DownloadsPage';
 // ─── COMPONENTES DE PRUEBA MIAURI ───────────────────────────────────────────
 function VideoPlayerMiauri() {
   const [video, setVideo] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Apunta al puerto 3006 configurado en tu docker-compose para el catálogo
+
     fetch('http://localhost:3006/api/stream/64b0f1a2c3d4e5f6a7b8c9d0')
       .then(res => res.json())
       .then(data => {
@@ -120,6 +121,7 @@ function App() {
           <Route path="/mylist" element={<ProtectedRoute><MyListPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
           <Route path="/watch/:contentId" element={<ProtectedRoute><WatchPage /></ProtectedRoute>} />
+          <Route path="/downloads" element={<DownloadsPage />} /> {/* 👈 NUEVA RUTA */}
 
           {/* Modulo independiente de administracion de contenido y estadisticas */}
           <Route path="/admin" element={<Navigate to="/admin/content" replace />} />

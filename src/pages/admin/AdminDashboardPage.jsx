@@ -4,6 +4,8 @@ import {
   getAdminCatalog,
   getTypeLabel
 } from '../../services/contentService';
+import { useLocotosTheme } from '../../hooks/useLocotosTheme';
+import '../catalog/CatalogPage.css';
 import './AdminDashboardPage.css';
 
 const currentYear = new Date().getFullYear();
@@ -52,7 +54,7 @@ const DonutChart = ({ peliculas, series }) => {
     <div className="dashboard-donut-wrap">
       <div
         className="dashboard-donut"
-        style={{ background: `conic-gradient(#2f8f83 0 ${moviePercent}%, #d07a43 ${moviePercent}% 100%)` }}
+        style={{ background: `conic-gradient(#8AD5DF 0 ${moviePercent}%, #E182CB ${moviePercent}% 100%)` }}
         aria-label={`Peliculas ${moviePercent} por ciento, series ${100 - moviePercent} por ciento`}
       />
       <div className="dashboard-legend">
@@ -72,6 +74,7 @@ const StatCard = ({ label, value, detail }) => (
 );
 
 const AdminDashboardPage = () => {
+  const { darkMode, toggleTheme, wrapperClass } = useLocotosTheme(true);
   const [contents, setContents] = useState([]);
   const [filters, setFilters] = useState(emptyFilters);
   const [loading, setLoading] = useState(true);
@@ -161,13 +164,16 @@ const AdminDashboardPage = () => {
   };
 
   return (
-    <main className="dashboard-shell">
+    <main className={`${wrapperClass} dashboard-shell`}>
       <header className="dashboard-header">
         <div>
           <p className="dashboard-kicker">Dashboard de contenido</p>
           <h1>Estadisticas del catalogo Mongo</h1>
         </div>
         <nav className="dashboard-nav" aria-label="Administracion">
+          <button type="button" className="theme-toggle-btn" onClick={toggleTheme}>
+            {darkMode ? '☀️ Claro' : '🌙 Oscuro'}
+          </button>
           <a href="/admin/content">CRUD</a>
           <a href="/catalog">Catalogo</a>
         </nav>
@@ -203,11 +209,11 @@ const AdminDashboardPage = () => {
           </select>
         </label>
         <label>
-          Anio desde
+          Año desde
           <input name="minYear" type="number" min={yearRange.min} max={yearRange.max} value={filters.minYear} onChange={handleChange} placeholder={String(yearRange.min)} />
         </label>
         <label>
-          Anio hasta
+          Año hasta
           <input name="maxYear" type="number" min={yearRange.min} max={currentYear + 5} value={filters.maxYear} onChange={handleChange} placeholder={String(yearRange.max)} />
         </label>
         <label>
@@ -255,7 +261,7 @@ const AdminDashboardPage = () => {
 
         <article className="dashboard-panel">
           <div className="dashboard-panel-title">
-            <h2>Distribucion por anio</h2>
+            <h2>Distribucion por año</h2>
             <span>{yearRange.min}-{yearRange.max}</span>
           </div>
           <BarList rows={analytics.yearCounts} maxRows={12} />
@@ -299,7 +305,7 @@ const AdminDashboardPage = () => {
                   <th>Titulo</th>
                   <th>Tipo</th>
                   <th>Generos</th>
-                  <th>Anio</th>
+                  <th>Año</th>
                   <th>Rating</th>
                 </tr>
               </thead>

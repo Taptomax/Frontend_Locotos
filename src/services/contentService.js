@@ -1,4 +1,6 @@
-const CATALOG_BASE = (import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:3001').replace(/\/+$/, '');
+import { normalizeDriveTrailerUrl } from '../utils/driveVideo';
+
+const CATALOG_BASE = (import.meta.env.VITE_CATALOG_API_URL || 'http://localhost:3006').replace(/\/+$/, '');
 const LEGACY_API_BASE = (import.meta.env.VITE_CONTENT_API_URL || 'http://localhost:3006/api').replace(/\/+$/, '');
 
 const fallbackContent = [
@@ -93,7 +95,7 @@ export const normalizeContent = (raw = {}) => {
   const typeKey = getTypeKey(raw.tipo);
   const description = raw.descripcion ?? raw.sinopsis ?? '';
   const imageUrl = raw.imagen_url ?? raw.poster ?? '';
-  const trailerUrl = raw.trailer_url ?? raw.trailer ?? raw.url ?? '';
+  const trailerUrl = normalizeDriveTrailerUrl(raw.trailer_url ?? raw.trailer ?? raw.url ?? '');
   const year = toNumberOrNull(raw.anio ?? raw.year);
   const durationSeconds = toNumberOrNull(raw.duracion_segundos);
   const rating = toNumberOrNull(raw.calificacion);
@@ -196,6 +198,17 @@ export const getLegacyNumericContentId = (content) => {
   return Number.isFinite(numericId) && numericId > 0 ? numericId : hashTitle(content?.titulo || content?.name);
 };
 
+/** ID estable para guardar progreso de reproducción (Redis). */
+export const getProgressContentId = (content) => {
+  const contentKey = String(getContentId(content) || '');
+  if (/^[a-f\d]{24}$/i.test(contentKey)) {
+    return hashTitle(contentKey);
+  }
+  const numericId = Number(contentKey);
+  if (Number.isFinite(numericId) && numericId > 0) return numericId;
+  return getLegacyNumericContentId(content);
+};
+
 export const getContentById = async (id) => {
   try {
     const idText = String(id);
@@ -229,11 +242,20 @@ export const getRecommendationsByContent = async (id, genre) => {
 };
 
 export const registerPlayback = async (id) => {
-  try {
-    return await requestJson(`${LEGACY_API_BASE}/content/${id}/play`, { method: 'POST', body: '{}' });
-  } catch {
-    return null;
+  const idText = String(id);
+  const targets = /^[a-f\d]{24}$/i.test(idText)
+    ? [`${CATALOG_BASE}/contenido/${idText}/play`]
+    : [`${LEGACY_API_BASE}/content/${idText}/play`, `${CATALOG_BASE}/contenido/${idText}/play`];
+
+  for (const url of targets) {
+    try {
+      const response = await fetch(url, { method: 'POST' });
+      if (response.ok) return await response.json().catch(() => ({ ok: true }));
+    } catch {
+      // no bloquea la reproduccion del trailer
+    }
   }
+  return null;
 };
 
 export const buildContentPayload = (form) => {
